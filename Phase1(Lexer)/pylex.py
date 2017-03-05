@@ -6,60 +6,62 @@
 # ------------------------------------------------------------
 import ply.lex as lex
 
+# List of reserved words
+from ply.lex import TOKEN
+
+reserved = {
+    'program': 'PROGRAM',
+    'main': 'MAIN',
+    'int': 'INT',
+    'real': 'REAL',
+    'char': 'CHAR',
+    'boolean': 'BOOLEAN',
+    'procedure': 'PROCEDURE',
+    'if': 'IF',
+    'then': 'THEN',
+    'else': 'ELSE',
+    'do': 'DO',
+    'while': 'WHILE',
+    'for': 'FOR',
+    'switch': 'SWITCH',
+    'end': 'END',
+    'return': 'RETURN',
+    'exit': 'EXIT',
+    'when': 'WHEN',
+    'upto': 'UPTO',
+    'downto': 'DOWNTO',
+    'case': 'CASE',
+    'and': 'AND',
+    'or': 'OR',
+    'and then': 'AND_THEN',
+    'or else': 'OR_ELSE',
+    'not': 'NOT',
+}
+
 # List of token names.   This is always required
-tokens = (
-   'NUMBER',
-   'PLUS',
-   'MINUS',
-   'TIMES',
-   'DIVIDE',
-   'LPAREN',
-   'RPAREN',
-)
+tokens = [
+             'ID', 'NUMCONST', 'CHARCONST', 'WHITE_SPACE', 'COMMENTS'
+         ] + list(reserved.values())
 
-# Regular expression rules for simple tokens
-t_PLUS    = r'\+'
-t_MINUS   = r'-'
-t_TIMES   = r'\*'
-t_DIVIDE  = r'/'
-t_LPAREN  = r'\('
-t_RPAREN  = r'\)'
+letter = r'([a-zA-Z])'
+digit = r'([0-9])'
+identifier = r'(' + letter + r'+)'
 
-# A regular expression rule with some action code
-def t_NUMBER(t):
-    r'\d+'
-    t.value = int(t.value)
+@TOKEN(identifier)
+def t_ID(t):
+    t.type = reserved.get(t.value, 'ID')  # Check for reserved words
     return t
-
-# Define a rule so we can track line numbers
-def t_newline(t):
-    r'\n+'
-    t.lexer.lineno += len(t.value)
-
-# A string containing ignored characters (spaces and tabs)
-t_ignore  = ' \t'
-
-# Error handling rule
-def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
-    t.lexer.skip(1)
-
-# Build the lexer
-lexer = lex.lex()
+    return
 
 
-# Test it out
-data = '''
-3 + 4 * 10
-  + -20 *2
-'''
+def t_NUMCONST(t):
+    r''
+    return
 
-# Give the lexer some input
-lexer.input(data)
 
-# Tokenize
-while True:
-    tok = lexer.token()
-    if not tok:
-        break      # No more input
-    print(tok)
+def t_WHITE_SPACE(t):
+    return
+
+
+def t_COMMENTS(t):
+    return
