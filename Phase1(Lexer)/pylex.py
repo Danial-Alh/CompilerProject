@@ -7,6 +7,14 @@
 import ply.lex as lex
 from ply.lex import TOKEN
 
+symbol_table = []
+
+
+def install_id(t):
+    symbol_table.append(t.value)
+    return len(symbol_table) - 1
+
+
 # List of reserved words
 reserved = {
     'program': 'PROGRAM',
@@ -55,7 +63,7 @@ backslash_charconst = r'(\\(.))'
 quoted_charconst = r'(\'(.)\')'
 charconst = r'(' + backslash_charconst + '|' + quoted_charconst + r')'
 numconst = r'(\#' + non_zero_digit + digit + r'*|' + zero + r')'
-realconst = r'(\#(' + non_zero_digit + digit + r'*|' + zero + r')\.' +\
+realconst = r'(\#(' + non_zero_digit + digit + r'*|' + zero + r')\.' + \
             digit + r'*' + non_zero_digit + r')'
 boolconst = r'((true)|(false))'
 
@@ -77,21 +85,16 @@ t_MINUS = r'-'
 t_MULT = r'\*'
 t_DIV = r'\\'
 t_MOD = r'%'
-t_ASSIGNMENT_SIGN = r':='
+t_ASSIGNMENT_SIGN = r'\:='
 t_SEMICOLON = r';'
 t_DOUBLE_DOT = r'\.\.'
 t_COLON = r'\:'
+t_COMMA = r'\,'
 
 
 def t_NEWLINE(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
-    return t
-
-
-@TOKEN(identifier)
-def t_ID(t):
-    t.type = reserved.get(t.value, 'ID')  # Check for reserved words
     return t
 
 
@@ -108,9 +111,11 @@ def t_NUMCONST(t):
 @TOKEN(charconst)
 def t_CHARCONST(t):
     if t.value == "\\0":
-        t.character = None
+        t.value = {"value": t.value, "character": None}
+    elif t.value[0] == '\'':
+        t.value = {"value": t.value, "character": t.value[1:len(t.value) - 1]}
     else:
-        t.character = t.value[1:]
+        t.value = {"value": t.value, "character": t.value[1:]}
     return t
 
 
@@ -124,9 +129,22 @@ def t_COMMENTS(t):
     return
 
 
+@TOKEN(identifier)
+def t_ID(t):
+    t.type = reserved.get(t.value, 'ID')  # Check for reserved words
+    if t.type == 'ID':
+        if t.value not in symbol_table:
+            index = install_id(t)
+        else:
+            index = symbol_table.index(t.value)
+        t.value = {"value": t.value, "index": index}
+    return t
+
+
 def t_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
+
 
 # Build the lexer
 lexer = lex.lex()
@@ -142,5 +160,5 @@ lexer.input(code)
 while True:
     tok = lexer.token()
     if not tok:
-        break      # No more input
+        break  # No more input
     print(tok)
