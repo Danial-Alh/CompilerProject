@@ -5,10 +5,9 @@
 # numbers and +,-,*,/
 # ------------------------------------------------------------
 import ply.lex as lex
-
-# List of reserved words
 from ply.lex import TOKEN
 
+# List of reserved words
 reserved = {
     'program': 'PROGRAM',
     'main': 'MAIN',
@@ -51,17 +50,24 @@ identifier = r'(' + letter + r'+)'
 def t_ID(t):
     t.type = reserved.get(t.value, 'ID')  # Check for reserved words
     return t
-    return
 
+numconst = r'(#' + digit + r'+(\.' + digit + r'+)?)'
 
+@TOKEN(numconst)
 def t_NUMCONST(t):
-    r''
-    return
+    return t
+
+backslash_const_char = r'(\\(.))'
+quoted_const_char = r''
+char_const = r'(' + backslash_const_char + '|' + quoted_const_char + r')'
+
+def t_CHARCONST(t):
+    return t
 
 
 def t_WHITE_SPACE(t):
-    return
+    return t
 
 
 def t_COMMENTS(t):
-    return
+    return t
