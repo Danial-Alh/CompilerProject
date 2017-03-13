@@ -63,8 +63,8 @@ backslash_charconst = r'(\\(.))'
 quoted_charconst = r'(\'(.)\')'
 charconst = r'(' + backslash_charconst + '|' + quoted_charconst + r')'
 numconst = r'(\#' + non_zero_digit + digit + r'*|' + zero + r')'
-realconst = r'(\#(' + non_zero_digit + digit + r'*|' + zero + r')\.' + \
-            digit + r'*' + non_zero_digit + r')'
+realconst = r'(\#(' + non_zero_digit + digit + r'*|' + zero + r')\.(' + \
+            digit + r'*' + non_zero_digit + r'|' + zero +'))'
 boolconst = r'((true)|(false))'
 
 t_ignore = ' \t'
