@@ -38,10 +38,9 @@ reserved = {
     'upto': 'UPTO',
     'downto': 'DOWNTO',
     'case': 'CASE',
+    'default': 'DEFAULT',
     'and': 'AND',
     'or': 'OR',
-    'and then': 'AND_THEN',
-    'or else': 'OR_ELSE',
     'not': 'NOT',
 }
 
@@ -72,7 +71,7 @@ t_LT = r'<'
 t_LE = r'<='
 t_GT = r'>'
 t_GE = r'>='
-t_EQ = r'=='
+t_EQ = r'='
 t_NEQ = r'<>'
 t_LPAR = r'\('
 t_RPAR = r'\)'

@@ -1,6 +1,4 @@
-import lexer
 import ply.yacc as yacc
-from lexer import tokens
 
 start = 'program'
 
@@ -94,9 +92,100 @@ def p_statement_list(p):
     pass
 
 
-# def p_(p):
-#     """"""
-#     pass
+def p_statement(p):
+    """statement            : ID ASSIGNMENT_SIGN expressions
+                            | IF bool_expressions THEN statement
+                            | IF bool_expressions THEN statement ELSE statement
+                            | DO statement WHILE bool_expressions
+                            | FOR ID ASSIGNMENT_SIGN counter DO statement
+                            | SWITCH expressions case_element default END
+                            | ID LPAR arguments_list RPAR
+                            | ID LBRACK expressions RBRACK ASSIGNMENT_SIGN expressions
+                            | RETURN expressions
+                            | EXIT WHEN bool_expressions
+                            | block
+                            | empty"""
+    pass
+
+
+def p_arguments_list(p):
+    """arguments_list       : multi_arguments 
+                            | expressions 
+                            | empty"""
+    pass
+
+
+def p_multi_arguments(p):
+    """multi_arguments      : multi_arguments COMMA expressions 
+                            | expressions"""
+    pass
+
+
+def p_counter(p):
+    """counter      : NUMCONST UPTO NUMCONST 
+                    | NUMCONST DOWNTO NUMCONST"""
+    pass
+
+
+def p_case_element(p):
+    """case_element     : CASE NUMCONST COLON block
+                        | case_element CASE NUMCONST COLON block"""
+    pass
+
+
+def p_default(p):
+    """default      : DEFAULT COLON block 
+                    | empty"""
+    pass
+
+
+def p_expressions(p):
+    """expressions      : constant_expressions 
+                        | bool_expressions 
+                        | arithmetic_expressions
+                        | ID 
+                        | ID LBRACK expressions RBRACK 
+                        | ID LPAR arguments_list RPAR 
+                        | LPAR expressions RPAR"""
+    pass
+
+
+def p_constant_expressions(p):
+    """constant_expressions     : NUMCONST 
+                                | REALCONST 
+                                | CHARCONST 
+                                | BOOLCONST"""
+    pass
+
+
+def p_bool_expressions(p):
+    """bool_expressions     : LT pair 
+                            | LE pair 
+                            | GT pair 
+                            | GE pair 
+                            | EQ pair 
+                            | NEQ pair 
+                            | AND pair 
+                            | OR pair 
+                            | AND THEN pair 
+                            | OR ELSE pair 
+                            | NOT expressions"""
+    pass
+
+
+def p_arithmetic_expressions(p):
+    """arithmetic_expressions       : PLUS pair 
+                                    | MINUS pair 
+                                    | MULT pair 
+                                    | DIV pair 
+                                    | MOD pair 
+                                    | MINUS expressions"""
+    pass
+
+
+def p_pair(p):
+    """pair     : LPAR expressions COMMA expressions RPAR"""
+    pass
 
 
 def p_empty(p):
@@ -109,13 +198,10 @@ def p_error(p):
 
 
 # Build the parser
-parser = yacc.yacc()
+parser = yacc.yacc(tabmodule="parsing_table")
 
-while True:
-    try:
-        s = raw_input('input.dm > ')
-    except EOFError:
-        break
-    if not s: continue
-    result = parser.parse(s, lexer=(lexer.lexer), debug=True)
-    print(result)
+# code = None
+# with open('./input.dm', 'r') as input_file:
+#     code = input_file.read()
+# result = parser.parse(code, lexer=(lexer.lexer), debug=True)
+# print(result)

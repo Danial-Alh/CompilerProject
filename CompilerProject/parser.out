@@ -2,43 +2,9 @@ Created by PLY version 3.10 (http://www.dabeaz.com/ply)
 
 Unused terminals:
 
-    COMMENTS
-    END
     WHITE_SPACE
-    DOWNTO
-    CASE
-    UPTO
-    PLUS
-    WHILE
-    OR_ELSE
-    IF
-    AND
-    GE
-    LE
-    COLON
-    MULT
-    MOD
-    ELSE
+    COMMENTS
     NEWLINE
-    FOR
-    OR
-    REALCONST
-    RETURN
-    NOT
-    EXIT
-    MINUS
-    DIV
-    NEQ
-    LT
-    GT
-    AND_THEN
-    EQ
-    BOOLCONST
-    WHEN
-    SWITCH
-    THEN
-    CHARCONST
-    DO
 
 Grammar
 
@@ -73,87 +39,3155 @@ Rule 27    parameters -> LPAR declarations_list RPAR
 Rule 28    block -> LBRACE statement_list RBRACE
 Rule 29    statement_list -> statement SEMICOLON
 Rule 30    statement_list -> statement_list statement SEMICOLON
-Rule 31    empty -> <empty>
+Rule 31    statement -> ID ASSIGNMENT_SIGN expressions
+Rule 32    statement -> IF bool_expressions THEN statement
+Rule 33    statement -> IF bool_expressions THEN statement ELSE statement
+Rule 34    statement -> DO statement WHILE bool_expressions
+Rule 35    statement -> FOR ID ASSIGNMENT_SIGN counter DO statement
+Rule 36    statement -> SWITCH expressions case_element default END
+Rule 37    statement -> ID LPAR arguments_list RPAR
+Rule 38    statement -> ID LBRACK expressions RBRACK ASSIGNMENT_SIGN expressions
+Rule 39    statement -> RETURN expressions
+Rule 40    statement -> EXIT WHEN bool_expressions
+Rule 41    statement -> block
+Rule 42    statement -> empty
+Rule 43    arguments_list -> multi_arguments
+Rule 44    arguments_list -> expressions
+Rule 45    arguments_list -> empty
+Rule 46    multi_arguments -> multi_arguments COMMA expressions
+Rule 47    multi_arguments -> expressions
+Rule 48    counter -> NUMCONST UPTO NUMCONST
+Rule 49    counter -> NUMCONST DOWNTO NUMCONST
+Rule 50    case_element -> CASE NUMCONST COLON block
+Rule 51    case_element -> case_element CASE NUMCONST COLON block
+Rule 52    default -> DEFAULT COLON block
+Rule 53    default -> empty
+Rule 54    expressions -> constant_expressions
+Rule 55    expressions -> bool_expressions
+Rule 56    expressions -> arithmetic_expressions
+Rule 57    expressions -> ID
+Rule 58    expressions -> ID LBRACK expressions RBRACK
+Rule 59    expressions -> ID LPAR arguments_list RPAR
+Rule 60    expressions -> LPAR expressions RPAR
+Rule 61    constant_expressions -> NUMCONST
+Rule 62    constant_expressions -> REALCONST
+Rule 63    constant_expressions -> CHARCONST
+Rule 64    constant_expressions -> BOOLCONST
+Rule 65    bool_expressions -> LT pair
+Rule 66    bool_expressions -> LE pair
+Rule 67    bool_expressions -> GT pair
+Rule 68    bool_expressions -> GE pair
+Rule 69    bool_expressions -> EQ pair
+Rule 70    bool_expressions -> NEQ pair
+Rule 71    bool_expressions -> AND pair
+Rule 72    bool_expressions -> OR pair
+Rule 73    bool_expressions -> AND THEN pair
+Rule 74    bool_expressions -> OR ELSE pair
+Rule 75    bool_expressions -> NOT expressions
+Rule 76    arithmetic_expressions -> PLUS pair
+Rule 77    arithmetic_expressions -> MINUS pair
+Rule 78    arithmetic_expressions -> MULT pair
+Rule 79    arithmetic_expressions -> DIV pair
+Rule 80    arithmetic_expressions -> MOD pair
+Rule 81    arithmetic_expressions -> MINUS expressions
+Rule 82    pair -> LPAR expressions COMMA expressions RPAR
+Rule 83    empty -> <empty>
 
 Terminals, with rules where they appear
 
-AND                  : 
-AND_THEN             : 
-ASSIGNMENT_SIGN      : 13
-BOOLCONST            : 
+AND                  : 71 73
+ASSIGNMENT_SIGN      : 13 31 35 38
+BOOLCONST            : 64
 BOOLEAN              : 9
-CASE                 : 
+CASE                 : 50 51
 CHAR                 : 8
-CHARCONST            : 
-COLON                : 
-COMMA                : 11 22
+CHARCONST            : 63
+COLON                : 50 51 52
+COMMA                : 11 22 46 82
 COMMENTS             : 
-DIV                  : 
-DO                   : 
+DEFAULT              : 52
+DIV                  : 79
+DO                   : 34 35
 DOUBLE_DOT           : 17 18 19
-DOWNTO               : 
-ELSE                 : 
-END                  : 
-EQ                   : 
-EXIT                 : 
-FOR                  : 
-GE                   : 
-GT                   : 
-ID                   : 1 14 15 16 17 17 26
-IF                   : 
+DOWNTO               : 49
+ELSE                 : 33 74
+END                  : 36
+EQ                   : 69
+EXIT                 : 40
+FOR                  : 35
+GE                   : 68
+GT                   : 67
+ID                   : 1 14 15 16 17 17 26 31 35 37 38 57 58 59
+IF                   : 32 33
 INT                  : 6
 LBRACE               : 21 26 28
-LBRACK               : 15 16
-LE                   : 
-LPAR                 : 27
-LT                   : 
+LBRACK               : 15 16 38 58
+LE                   : 66
+LPAR                 : 27 37 59 60 82
+LT                   : 65
 MAIN                 : 1
-MINUS                : 
-MOD                  : 
-MULT                 : 
-NEQ                  : 
+MINUS                : 77 81
+MOD                  : 80
+MULT                 : 78
+NEQ                  : 70
 NEWLINE              : 
-NOT                  : 
-NUMCONST             : 16 18 18
-OR                   : 
-OR_ELSE              : 
-PLUS                 : 
+NOT                  : 75
+NUMCONST             : 16 18 18 48 48 49 49 50 51 61
+OR                   : 72 74
+PLUS                 : 76
 PROCEDURE            : 26
 PROGRAM              : 1
 RBRACE               : 21 26 28
-RBRACK               : 15 16
+RBRACK               : 15 16 38 58
 REAL                 : 7
-REALCONST            : 
-RETURN               : 
-RPAR                 : 27
+REALCONST            : 62
+RETURN               : 39
+RPAR                 : 27 37 59 60 82
 SEMICOLON            : 4 26 29 30
-SWITCH               : 
-THEN                 : 
-UPTO                 : 
-WHEN                 : 
-WHILE                : 
+SWITCH               : 36
+THEN                 : 32 33 73
+UPTO                 : 48
+WHEN                 : 40
+WHILE                : 34
 WHITE_SPACE          : 
 error                : 
 
 Nonterminals, with rules where they appear
 
-arithmetic_expressions : 19 19
-block                : 1 26
-constant_expressions : 20 22 23
+arguments_list       : 37 59
+arithmetic_expressions : 19 19 56
+block                : 1 26 41 50 51 52
+bool_expressions     : 32 33 34 40 55
+case_element         : 36 51
+constant_expressions : 20 22 23 54
+counter              : 35
 dec                  : 12 13
 declarations         : 2 3
 declarations_list    : 1 3 26 27
 declarator           : 10 11
 declarator_list      : 4 11
-empty                : 5 25
+default              : 36
+empty                : 5 25 42 45 53
+expressions          : 31 36 38 38 39 44 46 47 58 60 75 81 82 82
 initializer          : 13
 initializer_list     : 21 22
+multi_arguments      : 43 46
+pair                 : 65 66 67 68 69 70 71 72 73 74 76 77 78 79 80
 parameters           : 26
 procedure            : 24
 procedure_list       : 1 24
 program              : 0
 range                : 15
-statement            : 29 30
+statement            : 29 30 32 33 33 34 35
 statement_list       : 28 30
 type_specifiers      : 4
 
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . program
+    (1) program -> . PROGRAM ID declarations_list procedure_list MAIN block
+
+    PROGRAM         shift and go to state 1
+
+    program                        shift and go to state 2
+
+state 1
+
+    (1) program -> PROGRAM . ID declarations_list procedure_list MAIN block
+
+    ID              shift and go to state 3
+
+
+state 2
+
+    (0) S' -> program .
+
+
+
+state 3
+
+    (1) program -> PROGRAM ID . declarations_list procedure_list MAIN block
+    (2) declarations_list -> . declarations
+    (3) declarations_list -> . declarations_list declarations
+    (4) declarations -> . type_specifiers declarator_list SEMICOLON
+    (5) declarations -> . empty
+    (6) type_specifiers -> . INT
+    (7) type_specifiers -> . REAL
+    (8) type_specifiers -> . CHAR
+    (9) type_specifiers -> . BOOLEAN
+    (83) empty -> .
+
+  ! shift/reduce conflict for INT resolved as shift
+  ! shift/reduce conflict for REAL resolved as shift
+  ! shift/reduce conflict for CHAR resolved as shift
+  ! shift/reduce conflict for BOOLEAN resolved as shift
+    INT             shift and go to state 9
+    REAL            shift and go to state 10
+    CHAR            shift and go to state 5
+    BOOLEAN         shift and go to state 8
+    MAIN            reduce using rule 83 (empty -> .)
+    PROCEDURE       reduce using rule 83 (empty -> .)
+
+  ! INT             [ reduce using rule 83 (empty -> .) ]
+  ! REAL            [ reduce using rule 83 (empty -> .) ]
+  ! CHAR            [ reduce using rule 83 (empty -> .) ]
+  ! BOOLEAN         [ reduce using rule 83 (empty -> .) ]
+
+    empty                          shift and go to state 6
+    declarations                   shift and go to state 4
+    type_specifiers                shift and go to state 7
+    declarations_list              shift and go to state 11
+
+state 4
+
+    (2) declarations_list -> declarations .
+
+    RPAR            reduce using rule 2 (declarations_list -> declarations .)
+    INT             reduce using rule 2 (declarations_list -> declarations .)
+    REAL            reduce using rule 2 (declarations_list -> declarations .)
+    CHAR            reduce using rule 2 (declarations_list -> declarations .)
+    BOOLEAN         reduce using rule 2 (declarations_list -> declarations .)
+    MAIN            reduce using rule 2 (declarations_list -> declarations .)
+    PROCEDURE       reduce using rule 2 (declarations_list -> declarations .)
+    LBRACE          reduce using rule 2 (declarations_list -> declarations .)
+
+
+state 5
+
+    (8) type_specifiers -> CHAR .
+
+    ID              reduce using rule 8 (type_specifiers -> CHAR .)
+
+
+state 6
+
+    (5) declarations -> empty .
+
+    LBRACE          reduce using rule 5 (declarations -> empty .)
+    INT             reduce using rule 5 (declarations -> empty .)
+    REAL            reduce using rule 5 (declarations -> empty .)
+    CHAR            reduce using rule 5 (declarations -> empty .)
+    BOOLEAN         reduce using rule 5 (declarations -> empty .)
+    MAIN            reduce using rule 5 (declarations -> empty .)
+    PROCEDURE       reduce using rule 5 (declarations -> empty .)
+    RPAR            reduce using rule 5 (declarations -> empty .)
+
+
+state 7
+
+    (4) declarations -> type_specifiers . declarator_list SEMICOLON
+    (10) declarator_list -> . declarator
+    (11) declarator_list -> . declarator_list COMMA declarator
+    (12) declarator -> . dec
+    (13) declarator -> . dec ASSIGNMENT_SIGN initializer
+    (14) dec -> . ID
+    (15) dec -> . ID LBRACK range RBRACK
+    (16) dec -> . ID LBRACK NUMCONST RBRACK
+
+    ID              shift and go to state 12
+
+    declarator                     shift and go to state 14
+    declarator_list                shift and go to state 13
+    dec                            shift and go to state 15
+
+state 8
+
+    (9) type_specifiers -> BOOLEAN .
+
+    ID              reduce using rule 9 (type_specifiers -> BOOLEAN .)
+
+
+state 9
+
+    (6) type_specifiers -> INT .
+
+    ID              reduce using rule 6 (type_specifiers -> INT .)
+
+
+state 10
+
+    (7) type_specifiers -> REAL .
+
+    ID              reduce using rule 7 (type_specifiers -> REAL .)
+
+
+state 11
+
+    (1) program -> PROGRAM ID declarations_list . procedure_list MAIN block
+    (3) declarations_list -> declarations_list . declarations
+    (24) procedure_list -> . procedure_list procedure
+    (25) procedure_list -> . empty
+    (4) declarations -> . type_specifiers declarator_list SEMICOLON
+    (5) declarations -> . empty
+    (83) empty -> .
+    (6) type_specifiers -> . INT
+    (7) type_specifiers -> . REAL
+    (8) type_specifiers -> . CHAR
+    (9) type_specifiers -> . BOOLEAN
+
+  ! shift/reduce conflict for INT resolved as shift
+  ! shift/reduce conflict for REAL resolved as shift
+  ! shift/reduce conflict for CHAR resolved as shift
+  ! shift/reduce conflict for BOOLEAN resolved as shift
+    MAIN            reduce using rule 83 (empty -> .)
+    PROCEDURE       reduce using rule 83 (empty -> .)
+    INT             shift and go to state 9
+    REAL            shift and go to state 10
+    CHAR            shift and go to state 5
+    BOOLEAN         shift and go to state 8
+
+  ! INT             [ reduce using rule 83 (empty -> .) ]
+  ! REAL            [ reduce using rule 83 (empty -> .) ]
+  ! CHAR            [ reduce using rule 83 (empty -> .) ]
+  ! BOOLEAN         [ reduce using rule 83 (empty -> .) ]
+
+    empty                          shift and go to state 18
+    procedure_list                 shift and go to state 17
+    type_specifiers                shift and go to state 7
+    declarations                   shift and go to state 16
+
+state 12
+
+    (14) dec -> ID .
+    (15) dec -> ID . LBRACK range RBRACK
+    (16) dec -> ID . LBRACK NUMCONST RBRACK
+
+    ASSIGNMENT_SIGN reduce using rule 14 (dec -> ID .)
+    SEMICOLON       reduce using rule 14 (dec -> ID .)
+    COMMA           reduce using rule 14 (dec -> ID .)
+    LBRACK          shift and go to state 19
+
+
+state 13
+
+    (4) declarations -> type_specifiers declarator_list . SEMICOLON
+    (11) declarator_list -> declarator_list . COMMA declarator
+
+    SEMICOLON       shift and go to state 21
+    COMMA           shift and go to state 20
+
+
+state 14
+
+    (10) declarator_list -> declarator .
+
+    SEMICOLON       reduce using rule 10 (declarator_list -> declarator .)
+    COMMA           reduce using rule 10 (declarator_list -> declarator .)
+
+
+state 15
+
+    (12) declarator -> dec .
+    (13) declarator -> dec . ASSIGNMENT_SIGN initializer
+
+    SEMICOLON       reduce using rule 12 (declarator -> dec .)
+    COMMA           reduce using rule 12 (declarator -> dec .)
+    ASSIGNMENT_SIGN shift and go to state 22
+
+
+state 16
+
+    (3) declarations_list -> declarations_list declarations .
+
+    RPAR            reduce using rule 3 (declarations_list -> declarations_list declarations .)
+    INT             reduce using rule 3 (declarations_list -> declarations_list declarations .)
+    REAL            reduce using rule 3 (declarations_list -> declarations_list declarations .)
+    CHAR            reduce using rule 3 (declarations_list -> declarations_list declarations .)
+    BOOLEAN         reduce using rule 3 (declarations_list -> declarations_list declarations .)
+    MAIN            reduce using rule 3 (declarations_list -> declarations_list declarations .)
+    PROCEDURE       reduce using rule 3 (declarations_list -> declarations_list declarations .)
+    LBRACE          reduce using rule 3 (declarations_list -> declarations_list declarations .)
+
+
+state 17
+
+    (1) program -> PROGRAM ID declarations_list procedure_list . MAIN block
+    (24) procedure_list -> procedure_list . procedure
+    (26) procedure -> . PROCEDURE ID parameters LBRACE declarations_list block RBRACE SEMICOLON
+
+    MAIN            shift and go to state 25
+    PROCEDURE       shift and go to state 23
+
+    procedure                      shift and go to state 24
+
+state 18
+
+    (25) procedure_list -> empty .
+    (5) declarations -> empty .
+
+  ! reduce/reduce conflict for MAIN resolved using rule 5 (declarations -> empty .)
+  ! reduce/reduce conflict for PROCEDURE resolved using rule 5 (declarations -> empty .)
+    INT             reduce using rule 5 (declarations -> empty .)
+    REAL            reduce using rule 5 (declarations -> empty .)
+    CHAR            reduce using rule 5 (declarations -> empty .)
+    BOOLEAN         reduce using rule 5 (declarations -> empty .)
+    MAIN            reduce using rule 5 (declarations -> empty .)
+    PROCEDURE       reduce using rule 5 (declarations -> empty .)
+
+  ! MAIN            [ reduce using rule 25 (procedure_list -> empty .) ]
+  ! PROCEDURE       [ reduce using rule 25 (procedure_list -> empty .) ]
+
+
+state 19
+
+    (15) dec -> ID LBRACK . range RBRACK
+    (16) dec -> ID LBRACK . NUMCONST RBRACK
+    (17) range -> . ID DOUBLE_DOT ID
+    (18) range -> . NUMCONST DOUBLE_DOT NUMCONST
+    (19) range -> . arithmetic_expressions DOUBLE_DOT arithmetic_expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    NUMCONST        shift and go to state 28
+    ID              shift and go to state 33
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 32
+    range                          shift and go to state 31
+
+state 20
+
+    (11) declarator_list -> declarator_list COMMA . declarator
+    (12) declarator -> . dec
+    (13) declarator -> . dec ASSIGNMENT_SIGN initializer
+    (14) dec -> . ID
+    (15) dec -> . ID LBRACK range RBRACK
+    (16) dec -> . ID LBRACK NUMCONST RBRACK
+
+    ID              shift and go to state 12
+
+    declarator                     shift and go to state 35
+    dec                            shift and go to state 15
+
+state 21
+
+    (4) declarations -> type_specifiers declarator_list SEMICOLON .
+
+    LBRACE          reduce using rule 4 (declarations -> type_specifiers declarator_list SEMICOLON .)
+    INT             reduce using rule 4 (declarations -> type_specifiers declarator_list SEMICOLON .)
+    REAL            reduce using rule 4 (declarations -> type_specifiers declarator_list SEMICOLON .)
+    CHAR            reduce using rule 4 (declarations -> type_specifiers declarator_list SEMICOLON .)
+    BOOLEAN         reduce using rule 4 (declarations -> type_specifiers declarator_list SEMICOLON .)
+    MAIN            reduce using rule 4 (declarations -> type_specifiers declarator_list SEMICOLON .)
+    PROCEDURE       reduce using rule 4 (declarations -> type_specifiers declarator_list SEMICOLON .)
+    RPAR            reduce using rule 4 (declarations -> type_specifiers declarator_list SEMICOLON .)
+
+
+state 22
+
+    (13) declarator -> dec ASSIGNMENT_SIGN . initializer
+    (20) initializer -> . constant_expressions
+    (21) initializer -> . LBRACE initializer_list RBRACE
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+
+    LBRACE          shift and go to state 40
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+
+    initializer                    shift and go to state 36
+    constant_expressions           shift and go to state 41
+
+state 23
+
+    (26) procedure -> PROCEDURE . ID parameters LBRACE declarations_list block RBRACE SEMICOLON
+
+    ID              shift and go to state 43
+
+
+state 24
+
+    (24) procedure_list -> procedure_list procedure .
+
+    MAIN            reduce using rule 24 (procedure_list -> procedure_list procedure .)
+    PROCEDURE       reduce using rule 24 (procedure_list -> procedure_list procedure .)
+
+
+state 25
+
+    (1) program -> PROGRAM ID declarations_list procedure_list MAIN . block
+    (28) block -> . LBRACE statement_list RBRACE
+
+    LBRACE          shift and go to state 45
+
+    block                          shift and go to state 44
+
+state 26
+
+    (80) arithmetic_expressions -> MOD . pair
+    (82) pair -> . LPAR expressions COMMA expressions RPAR
+
+    LPAR            shift and go to state 47
+
+    pair                           shift and go to state 46
+
+state 27
+
+    (78) arithmetic_expressions -> MULT . pair
+    (82) pair -> . LPAR expressions COMMA expressions RPAR
+
+    LPAR            shift and go to state 47
+
+    pair                           shift and go to state 48
+
+state 28
+
+    (16) dec -> ID LBRACK NUMCONST . RBRACK
+    (18) range -> NUMCONST . DOUBLE_DOT NUMCONST
+
+    RBRACK          shift and go to state 50
+    DOUBLE_DOT      shift and go to state 49
+
+
+state 29
+
+    (76) arithmetic_expressions -> PLUS . pair
+    (82) pair -> . LPAR expressions COMMA expressions RPAR
+
+    LPAR            shift and go to state 47
+
+    pair                           shift and go to state 51
+
+state 30
+
+    (79) arithmetic_expressions -> DIV . pair
+    (82) pair -> . LPAR expressions COMMA expressions RPAR
+
+    LPAR            shift and go to state 47
+
+    pair                           shift and go to state 52
+
+state 31
+
+    (15) dec -> ID LBRACK range . RBRACK
+
+    RBRACK          shift and go to state 53
+
+
+state 32
+
+    (19) range -> arithmetic_expressions . DOUBLE_DOT arithmetic_expressions
+
+    DOUBLE_DOT      shift and go to state 54
+
+
+state 33
+
+    (17) range -> ID . DOUBLE_DOT ID
+
+    DOUBLE_DOT      shift and go to state 55
+
+
+state 34
+
+    (77) arithmetic_expressions -> MINUS . pair
+    (81) arithmetic_expressions -> MINUS . expressions
+    (82) pair -> . LPAR expressions COMMA expressions RPAR
+    (54) expressions -> . constant_expressions
+    (55) expressions -> . bool_expressions
+    (56) expressions -> . arithmetic_expressions
+    (57) expressions -> . ID
+    (58) expressions -> . ID LBRACK expressions RBRACK
+    (59) expressions -> . ID LPAR arguments_list RPAR
+    (60) expressions -> . LPAR expressions RPAR
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    LPAR            shift and go to state 65
+    ID              shift and go to state 57
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    expressions                    shift and go to state 64
+    arithmetic_expressions         shift and go to state 62
+    pair                           shift and go to state 68
+    constant_expressions           shift and go to state 59
+    bool_expressions               shift and go to state 71
+
+state 35
+
+    (11) declarator_list -> declarator_list COMMA declarator .
+
+    SEMICOLON       reduce using rule 11 (declarator_list -> declarator_list COMMA declarator .)
+    COMMA           reduce using rule 11 (declarator_list -> declarator_list COMMA declarator .)
+
+
+state 36
+
+    (13) declarator -> dec ASSIGNMENT_SIGN initializer .
+
+    SEMICOLON       reduce using rule 13 (declarator -> dec ASSIGNMENT_SIGN initializer .)
+    COMMA           reduce using rule 13 (declarator -> dec ASSIGNMENT_SIGN initializer .)
+
+
+state 37
+
+    (63) constant_expressions -> CHARCONST .
+
+    SEMICOLON       reduce using rule 63 (constant_expressions -> CHARCONST .)
+    WHILE           reduce using rule 63 (constant_expressions -> CHARCONST .)
+    ELSE            reduce using rule 63 (constant_expressions -> CHARCONST .)
+    RPAR            reduce using rule 63 (constant_expressions -> CHARCONST .)
+    COMMA           reduce using rule 63 (constant_expressions -> CHARCONST .)
+    RBRACE          reduce using rule 63 (constant_expressions -> CHARCONST .)
+    CASE            reduce using rule 63 (constant_expressions -> CHARCONST .)
+    RBRACK          reduce using rule 63 (constant_expressions -> CHARCONST .)
+    DOUBLE_DOT      reduce using rule 63 (constant_expressions -> CHARCONST .)
+    THEN            reduce using rule 63 (constant_expressions -> CHARCONST .)
+
+
+state 38
+
+    (61) constant_expressions -> NUMCONST .
+
+    SEMICOLON       reduce using rule 61 (constant_expressions -> NUMCONST .)
+    WHILE           reduce using rule 61 (constant_expressions -> NUMCONST .)
+    ELSE            reduce using rule 61 (constant_expressions -> NUMCONST .)
+    RPAR            reduce using rule 61 (constant_expressions -> NUMCONST .)
+    COMMA           reduce using rule 61 (constant_expressions -> NUMCONST .)
+    RBRACE          reduce using rule 61 (constant_expressions -> NUMCONST .)
+    CASE            reduce using rule 61 (constant_expressions -> NUMCONST .)
+    RBRACK          reduce using rule 61 (constant_expressions -> NUMCONST .)
+    DOUBLE_DOT      reduce using rule 61 (constant_expressions -> NUMCONST .)
+    THEN            reduce using rule 61 (constant_expressions -> NUMCONST .)
+
+
+state 39
+
+    (62) constant_expressions -> REALCONST .
+
+    SEMICOLON       reduce using rule 62 (constant_expressions -> REALCONST .)
+    WHILE           reduce using rule 62 (constant_expressions -> REALCONST .)
+    ELSE            reduce using rule 62 (constant_expressions -> REALCONST .)
+    RPAR            reduce using rule 62 (constant_expressions -> REALCONST .)
+    COMMA           reduce using rule 62 (constant_expressions -> REALCONST .)
+    RBRACE          reduce using rule 62 (constant_expressions -> REALCONST .)
+    CASE            reduce using rule 62 (constant_expressions -> REALCONST .)
+    RBRACK          reduce using rule 62 (constant_expressions -> REALCONST .)
+    DOUBLE_DOT      reduce using rule 62 (constant_expressions -> REALCONST .)
+    THEN            reduce using rule 62 (constant_expressions -> REALCONST .)
+
+
+state 40
+
+    (21) initializer -> LBRACE . initializer_list RBRACE
+    (22) initializer_list -> . constant_expressions COMMA initializer_list
+    (23) initializer_list -> . constant_expressions
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+
+    constant_expressions           shift and go to state 73
+    initializer_list               shift and go to state 72
+
+state 41
+
+    (20) initializer -> constant_expressions .
+
+    SEMICOLON       reduce using rule 20 (initializer -> constant_expressions .)
+    COMMA           reduce using rule 20 (initializer -> constant_expressions .)
+
+
+state 42
+
+    (64) constant_expressions -> BOOLCONST .
+
+    SEMICOLON       reduce using rule 64 (constant_expressions -> BOOLCONST .)
+    WHILE           reduce using rule 64 (constant_expressions -> BOOLCONST .)
+    ELSE            reduce using rule 64 (constant_expressions -> BOOLCONST .)
+    RPAR            reduce using rule 64 (constant_expressions -> BOOLCONST .)
+    COMMA           reduce using rule 64 (constant_expressions -> BOOLCONST .)
+    RBRACE          reduce using rule 64 (constant_expressions -> BOOLCONST .)
+    CASE            reduce using rule 64 (constant_expressions -> BOOLCONST .)
+    RBRACK          reduce using rule 64 (constant_expressions -> BOOLCONST .)
+    DOUBLE_DOT      reduce using rule 64 (constant_expressions -> BOOLCONST .)
+    THEN            reduce using rule 64 (constant_expressions -> BOOLCONST .)
+
+
+state 43
+
+    (26) procedure -> PROCEDURE ID . parameters LBRACE declarations_list block RBRACE SEMICOLON
+    (27) parameters -> . LPAR declarations_list RPAR
+
+    LPAR            shift and go to state 75
+
+    parameters                     shift and go to state 74
+
+state 44
+
+    (1) program -> PROGRAM ID declarations_list procedure_list MAIN block .
+
+    $end            reduce using rule 1 (program -> PROGRAM ID declarations_list procedure_list MAIN block .)
+
+
+state 45
+
+    (28) block -> LBRACE . statement_list RBRACE
+    (29) statement_list -> . statement SEMICOLON
+    (30) statement_list -> . statement_list statement SEMICOLON
+    (31) statement -> . ID ASSIGNMENT_SIGN expressions
+    (32) statement -> . IF bool_expressions THEN statement
+    (33) statement -> . IF bool_expressions THEN statement ELSE statement
+    (34) statement -> . DO statement WHILE bool_expressions
+    (35) statement -> . FOR ID ASSIGNMENT_SIGN counter DO statement
+    (36) statement -> . SWITCH expressions case_element default END
+    (37) statement -> . ID LPAR arguments_list RPAR
+    (38) statement -> . ID LBRACK expressions RBRACK ASSIGNMENT_SIGN expressions
+    (39) statement -> . RETURN expressions
+    (40) statement -> . EXIT WHEN bool_expressions
+    (41) statement -> . block
+    (42) statement -> . empty
+    (28) block -> . LBRACE statement_list RBRACE
+    (83) empty -> .
+
+    ID              shift and go to state 77
+    IF              shift and go to state 79
+    DO              shift and go to state 83
+    FOR             shift and go to state 86
+    SWITCH          shift and go to state 85
+    RETURN          shift and go to state 76
+    EXIT            shift and go to state 82
+    LBRACE          shift and go to state 45
+    SEMICOLON       reduce using rule 83 (empty -> .)
+
+    block                          shift and go to state 84
+    empty                          shift and go to state 80
+    statement_list                 shift and go to state 78
+    statement                      shift and go to state 81
+
+state 46
+
+    (80) arithmetic_expressions -> MOD pair .
+
+    RBRACK          reduce using rule 80 (arithmetic_expressions -> MOD pair .)
+    SEMICOLON       reduce using rule 80 (arithmetic_expressions -> MOD pair .)
+    WHILE           reduce using rule 80 (arithmetic_expressions -> MOD pair .)
+    ELSE            reduce using rule 80 (arithmetic_expressions -> MOD pair .)
+    DOUBLE_DOT      reduce using rule 80 (arithmetic_expressions -> MOD pair .)
+    RPAR            reduce using rule 80 (arithmetic_expressions -> MOD pair .)
+    COMMA           reduce using rule 80 (arithmetic_expressions -> MOD pair .)
+    CASE            reduce using rule 80 (arithmetic_expressions -> MOD pair .)
+    THEN            reduce using rule 80 (arithmetic_expressions -> MOD pair .)
+
+
+state 47
+
+    (82) pair -> LPAR . expressions COMMA expressions RPAR
+    (54) expressions -> . constant_expressions
+    (55) expressions -> . bool_expressions
+    (56) expressions -> . arithmetic_expressions
+    (57) expressions -> . ID
+    (58) expressions -> . ID LBRACK expressions RBRACK
+    (59) expressions -> . ID LPAR arguments_list RPAR
+    (60) expressions -> . LPAR expressions RPAR
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    ID              shift and go to state 57
+    LPAR            shift and go to state 88
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 62
+    expressions                    shift and go to state 87
+    constant_expressions           shift and go to state 59
+    bool_expressions               shift and go to state 71
+
+state 48
+
+    (78) arithmetic_expressions -> MULT pair .
+
+    RBRACK          reduce using rule 78 (arithmetic_expressions -> MULT pair .)
+    SEMICOLON       reduce using rule 78 (arithmetic_expressions -> MULT pair .)
+    WHILE           reduce using rule 78 (arithmetic_expressions -> MULT pair .)
+    ELSE            reduce using rule 78 (arithmetic_expressions -> MULT pair .)
+    DOUBLE_DOT      reduce using rule 78 (arithmetic_expressions -> MULT pair .)
+    RPAR            reduce using rule 78 (arithmetic_expressions -> MULT pair .)
+    COMMA           reduce using rule 78 (arithmetic_expressions -> MULT pair .)
+    CASE            reduce using rule 78 (arithmetic_expressions -> MULT pair .)
+    THEN            reduce using rule 78 (arithmetic_expressions -> MULT pair .)
+
+
+state 49
+
+    (18) range -> NUMCONST DOUBLE_DOT . NUMCONST
+
+    NUMCONST        shift and go to state 89
+
+
+state 50
+
+    (16) dec -> ID LBRACK NUMCONST RBRACK .
+
+    ASSIGNMENT_SIGN reduce using rule 16 (dec -> ID LBRACK NUMCONST RBRACK .)
+    SEMICOLON       reduce using rule 16 (dec -> ID LBRACK NUMCONST RBRACK .)
+    COMMA           reduce using rule 16 (dec -> ID LBRACK NUMCONST RBRACK .)
+
+
+state 51
+
+    (76) arithmetic_expressions -> PLUS pair .
+
+    RBRACK          reduce using rule 76 (arithmetic_expressions -> PLUS pair .)
+    SEMICOLON       reduce using rule 76 (arithmetic_expressions -> PLUS pair .)
+    WHILE           reduce using rule 76 (arithmetic_expressions -> PLUS pair .)
+    ELSE            reduce using rule 76 (arithmetic_expressions -> PLUS pair .)
+    DOUBLE_DOT      reduce using rule 76 (arithmetic_expressions -> PLUS pair .)
+    RPAR            reduce using rule 76 (arithmetic_expressions -> PLUS pair .)
+    COMMA           reduce using rule 76 (arithmetic_expressions -> PLUS pair .)
+    CASE            reduce using rule 76 (arithmetic_expressions -> PLUS pair .)
+    THEN            reduce using rule 76 (arithmetic_expressions -> PLUS pair .)
+
+
+state 52
+
+    (79) arithmetic_expressions -> DIV pair .
+
+    RBRACK          reduce using rule 79 (arithmetic_expressions -> DIV pair .)
+    SEMICOLON       reduce using rule 79 (arithmetic_expressions -> DIV pair .)
+    WHILE           reduce using rule 79 (arithmetic_expressions -> DIV pair .)
+    ELSE            reduce using rule 79 (arithmetic_expressions -> DIV pair .)
+    DOUBLE_DOT      reduce using rule 79 (arithmetic_expressions -> DIV pair .)
+    RPAR            reduce using rule 79 (arithmetic_expressions -> DIV pair .)
+    COMMA           reduce using rule 79 (arithmetic_expressions -> DIV pair .)
+    CASE            reduce using rule 79 (arithmetic_expressions -> DIV pair .)
+    THEN            reduce using rule 79 (arithmetic_expressions -> DIV pair .)
+
+
+state 53
+
+    (15) dec -> ID LBRACK range RBRACK .
+
+    ASSIGNMENT_SIGN reduce using rule 15 (dec -> ID LBRACK range RBRACK .)
+    SEMICOLON       reduce using rule 15 (dec -> ID LBRACK range RBRACK .)
+    COMMA           reduce using rule 15 (dec -> ID LBRACK range RBRACK .)
+
+
+state 54
+
+    (19) range -> arithmetic_expressions DOUBLE_DOT . arithmetic_expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 90
+
+state 55
+
+    (17) range -> ID DOUBLE_DOT . ID
+
+    ID              shift and go to state 91
+
+
+state 56
+
+    (71) bool_expressions -> AND . pair
+    (73) bool_expressions -> AND . THEN pair
+    (82) pair -> . LPAR expressions COMMA expressions RPAR
+
+    THEN            shift and go to state 93
+    LPAR            shift and go to state 47
+
+    pair                           shift and go to state 92
+
+state 57
+
+    (57) expressions -> ID .
+    (58) expressions -> ID . LBRACK expressions RBRACK
+    (59) expressions -> ID . LPAR arguments_list RPAR
+
+    COMMA           reduce using rule 57 (expressions -> ID .)
+    RPAR            reduce using rule 57 (expressions -> ID .)
+    CASE            reduce using rule 57 (expressions -> ID .)
+    DOUBLE_DOT      reduce using rule 57 (expressions -> ID .)
+    RBRACK          reduce using rule 57 (expressions -> ID .)
+    SEMICOLON       reduce using rule 57 (expressions -> ID .)
+    WHILE           reduce using rule 57 (expressions -> ID .)
+    ELSE            reduce using rule 57 (expressions -> ID .)
+    THEN            reduce using rule 57 (expressions -> ID .)
+    LBRACK          shift and go to state 94
+    LPAR            shift and go to state 95
+
+
+state 58
+
+    (69) bool_expressions -> EQ . pair
+    (82) pair -> . LPAR expressions COMMA expressions RPAR
+
+    LPAR            shift and go to state 47
+
+    pair                           shift and go to state 96
+
+state 59
+
+    (54) expressions -> constant_expressions .
+
+    COMMA           reduce using rule 54 (expressions -> constant_expressions .)
+    RPAR            reduce using rule 54 (expressions -> constant_expressions .)
+    CASE            reduce using rule 54 (expressions -> constant_expressions .)
+    DOUBLE_DOT      reduce using rule 54 (expressions -> constant_expressions .)
+    RBRACK          reduce using rule 54 (expressions -> constant_expressions .)
+    SEMICOLON       reduce using rule 54 (expressions -> constant_expressions .)
+    WHILE           reduce using rule 54 (expressions -> constant_expressions .)
+    ELSE            reduce using rule 54 (expressions -> constant_expressions .)
+    THEN            reduce using rule 54 (expressions -> constant_expressions .)
+
+
+state 60
+
+    (68) bool_expressions -> GE . pair
+    (82) pair -> . LPAR expressions COMMA expressions RPAR
+
+    LPAR            shift and go to state 47
+
+    pair                           shift and go to state 97
+
+state 61
+
+    (66) bool_expressions -> LE . pair
+    (82) pair -> . LPAR expressions COMMA expressions RPAR
+
+    LPAR            shift and go to state 47
+
+    pair                           shift and go to state 98
+
+state 62
+
+    (56) expressions -> arithmetic_expressions .
+
+    COMMA           reduce using rule 56 (expressions -> arithmetic_expressions .)
+    RPAR            reduce using rule 56 (expressions -> arithmetic_expressions .)
+    CASE            reduce using rule 56 (expressions -> arithmetic_expressions .)
+    DOUBLE_DOT      reduce using rule 56 (expressions -> arithmetic_expressions .)
+    RBRACK          reduce using rule 56 (expressions -> arithmetic_expressions .)
+    SEMICOLON       reduce using rule 56 (expressions -> arithmetic_expressions .)
+    WHILE           reduce using rule 56 (expressions -> arithmetic_expressions .)
+    ELSE            reduce using rule 56 (expressions -> arithmetic_expressions .)
+    THEN            reduce using rule 56 (expressions -> arithmetic_expressions .)
+
+
+state 63
+
+    (72) bool_expressions -> OR . pair
+    (74) bool_expressions -> OR . ELSE pair
+    (82) pair -> . LPAR expressions COMMA expressions RPAR
+
+    ELSE            shift and go to state 99
+    LPAR            shift and go to state 47
+
+    pair                           shift and go to state 100
+
+state 64
+
+    (81) arithmetic_expressions -> MINUS expressions .
+
+    RBRACK          reduce using rule 81 (arithmetic_expressions -> MINUS expressions .)
+    SEMICOLON       reduce using rule 81 (arithmetic_expressions -> MINUS expressions .)
+    WHILE           reduce using rule 81 (arithmetic_expressions -> MINUS expressions .)
+    ELSE            reduce using rule 81 (arithmetic_expressions -> MINUS expressions .)
+    DOUBLE_DOT      reduce using rule 81 (arithmetic_expressions -> MINUS expressions .)
+    RPAR            reduce using rule 81 (arithmetic_expressions -> MINUS expressions .)
+    COMMA           reduce using rule 81 (arithmetic_expressions -> MINUS expressions .)
+    CASE            reduce using rule 81 (arithmetic_expressions -> MINUS expressions .)
+    THEN            reduce using rule 81 (arithmetic_expressions -> MINUS expressions .)
+
+
+state 65
+
+    (82) pair -> LPAR . expressions COMMA expressions RPAR
+    (60) expressions -> LPAR . expressions RPAR
+    (54) expressions -> . constant_expressions
+    (55) expressions -> . bool_expressions
+    (56) expressions -> . arithmetic_expressions
+    (57) expressions -> . ID
+    (58) expressions -> . ID LBRACK expressions RBRACK
+    (59) expressions -> . ID LPAR arguments_list RPAR
+    (60) expressions -> . LPAR expressions RPAR
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    ID              shift and go to state 57
+    LPAR            shift and go to state 88
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 62
+    expressions                    shift and go to state 101
+    constant_expressions           shift and go to state 59
+    bool_expressions               shift and go to state 71
+
+state 66
+
+    (65) bool_expressions -> LT . pair
+    (82) pair -> . LPAR expressions COMMA expressions RPAR
+
+    LPAR            shift and go to state 47
+
+    pair                           shift and go to state 102
+
+state 67
+
+    (70) bool_expressions -> NEQ . pair
+    (82) pair -> . LPAR expressions COMMA expressions RPAR
+
+    LPAR            shift and go to state 47
+
+    pair                           shift and go to state 103
+
+state 68
+
+    (77) arithmetic_expressions -> MINUS pair .
+
+    RBRACK          reduce using rule 77 (arithmetic_expressions -> MINUS pair .)
+    SEMICOLON       reduce using rule 77 (arithmetic_expressions -> MINUS pair .)
+    WHILE           reduce using rule 77 (arithmetic_expressions -> MINUS pair .)
+    ELSE            reduce using rule 77 (arithmetic_expressions -> MINUS pair .)
+    DOUBLE_DOT      reduce using rule 77 (arithmetic_expressions -> MINUS pair .)
+    RPAR            reduce using rule 77 (arithmetic_expressions -> MINUS pair .)
+    COMMA           reduce using rule 77 (arithmetic_expressions -> MINUS pair .)
+    CASE            reduce using rule 77 (arithmetic_expressions -> MINUS pair .)
+    THEN            reduce using rule 77 (arithmetic_expressions -> MINUS pair .)
+
+
+state 69
+
+    (67) bool_expressions -> GT . pair
+    (82) pair -> . LPAR expressions COMMA expressions RPAR
+
+    LPAR            shift and go to state 47
+
+    pair                           shift and go to state 104
+
+state 70
+
+    (75) bool_expressions -> NOT . expressions
+    (54) expressions -> . constant_expressions
+    (55) expressions -> . bool_expressions
+    (56) expressions -> . arithmetic_expressions
+    (57) expressions -> . ID
+    (58) expressions -> . ID LBRACK expressions RBRACK
+    (59) expressions -> . ID LPAR arguments_list RPAR
+    (60) expressions -> . LPAR expressions RPAR
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    ID              shift and go to state 57
+    LPAR            shift and go to state 88
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 62
+    expressions                    shift and go to state 105
+    constant_expressions           shift and go to state 59
+    bool_expressions               shift and go to state 71
+
+state 71
+
+    (55) expressions -> bool_expressions .
+
+    COMMA           reduce using rule 55 (expressions -> bool_expressions .)
+    RPAR            reduce using rule 55 (expressions -> bool_expressions .)
+    CASE            reduce using rule 55 (expressions -> bool_expressions .)
+    DOUBLE_DOT      reduce using rule 55 (expressions -> bool_expressions .)
+    RBRACK          reduce using rule 55 (expressions -> bool_expressions .)
+    SEMICOLON       reduce using rule 55 (expressions -> bool_expressions .)
+    WHILE           reduce using rule 55 (expressions -> bool_expressions .)
+    ELSE            reduce using rule 55 (expressions -> bool_expressions .)
+    THEN            reduce using rule 55 (expressions -> bool_expressions .)
+
+
+state 72
+
+    (21) initializer -> LBRACE initializer_list . RBRACE
+
+    RBRACE          shift and go to state 106
+
+
+state 73
+
+    (22) initializer_list -> constant_expressions . COMMA initializer_list
+    (23) initializer_list -> constant_expressions .
+
+    COMMA           shift and go to state 107
+    RBRACE          reduce using rule 23 (initializer_list -> constant_expressions .)
+
+
+state 74
+
+    (26) procedure -> PROCEDURE ID parameters . LBRACE declarations_list block RBRACE SEMICOLON
+
+    LBRACE          shift and go to state 108
+
+
+state 75
+
+    (27) parameters -> LPAR . declarations_list RPAR
+    (2) declarations_list -> . declarations
+    (3) declarations_list -> . declarations_list declarations
+    (4) declarations -> . type_specifiers declarator_list SEMICOLON
+    (5) declarations -> . empty
+    (6) type_specifiers -> . INT
+    (7) type_specifiers -> . REAL
+    (8) type_specifiers -> . CHAR
+    (9) type_specifiers -> . BOOLEAN
+    (83) empty -> .
+
+  ! shift/reduce conflict for INT resolved as shift
+  ! shift/reduce conflict for REAL resolved as shift
+  ! shift/reduce conflict for CHAR resolved as shift
+  ! shift/reduce conflict for BOOLEAN resolved as shift
+    INT             shift and go to state 9
+    REAL            shift and go to state 10
+    CHAR            shift and go to state 5
+    BOOLEAN         shift and go to state 8
+    RPAR            reduce using rule 83 (empty -> .)
+
+  ! INT             [ reduce using rule 83 (empty -> .) ]
+  ! REAL            [ reduce using rule 83 (empty -> .) ]
+  ! CHAR            [ reduce using rule 83 (empty -> .) ]
+  ! BOOLEAN         [ reduce using rule 83 (empty -> .) ]
+
+    declarations                   shift and go to state 4
+    empty                          shift and go to state 6
+    type_specifiers                shift and go to state 7
+    declarations_list              shift and go to state 109
+
+state 76
+
+    (39) statement -> RETURN . expressions
+    (54) expressions -> . constant_expressions
+    (55) expressions -> . bool_expressions
+    (56) expressions -> . arithmetic_expressions
+    (57) expressions -> . ID
+    (58) expressions -> . ID LBRACK expressions RBRACK
+    (59) expressions -> . ID LPAR arguments_list RPAR
+    (60) expressions -> . LPAR expressions RPAR
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    ID              shift and go to state 57
+    LPAR            shift and go to state 88
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 62
+    expressions                    shift and go to state 110
+    constant_expressions           shift and go to state 59
+    bool_expressions               shift and go to state 71
+
+state 77
+
+    (31) statement -> ID . ASSIGNMENT_SIGN expressions
+    (37) statement -> ID . LPAR arguments_list RPAR
+    (38) statement -> ID . LBRACK expressions RBRACK ASSIGNMENT_SIGN expressions
+
+    ASSIGNMENT_SIGN shift and go to state 111
+    LPAR            shift and go to state 113
+    LBRACK          shift and go to state 112
+
+
+state 78
+
+    (28) block -> LBRACE statement_list . RBRACE
+    (30) statement_list -> statement_list . statement SEMICOLON
+    (31) statement -> . ID ASSIGNMENT_SIGN expressions
+    (32) statement -> . IF bool_expressions THEN statement
+    (33) statement -> . IF bool_expressions THEN statement ELSE statement
+    (34) statement -> . DO statement WHILE bool_expressions
+    (35) statement -> . FOR ID ASSIGNMENT_SIGN counter DO statement
+    (36) statement -> . SWITCH expressions case_element default END
+    (37) statement -> . ID LPAR arguments_list RPAR
+    (38) statement -> . ID LBRACK expressions RBRACK ASSIGNMENT_SIGN expressions
+    (39) statement -> . RETURN expressions
+    (40) statement -> . EXIT WHEN bool_expressions
+    (41) statement -> . block
+    (42) statement -> . empty
+    (28) block -> . LBRACE statement_list RBRACE
+    (83) empty -> .
+
+    RBRACE          shift and go to state 115
+    ID              shift and go to state 77
+    IF              shift and go to state 79
+    DO              shift and go to state 83
+    FOR             shift and go to state 86
+    SWITCH          shift and go to state 85
+    RETURN          shift and go to state 76
+    EXIT            shift and go to state 82
+    LBRACE          shift and go to state 45
+    SEMICOLON       reduce using rule 83 (empty -> .)
+
+    block                          shift and go to state 84
+    empty                          shift and go to state 80
+    statement                      shift and go to state 114
+
+state 79
+
+    (32) statement -> IF . bool_expressions THEN statement
+    (33) statement -> IF . bool_expressions THEN statement ELSE statement
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+
+    bool_expressions               shift and go to state 116
+
+state 80
+
+    (42) statement -> empty .
+
+    ELSE            reduce using rule 42 (statement -> empty .)
+    SEMICOLON       reduce using rule 42 (statement -> empty .)
+    WHILE           reduce using rule 42 (statement -> empty .)
+
+
+state 81
+
+    (29) statement_list -> statement . SEMICOLON
+
+    SEMICOLON       shift and go to state 117
+
+
+state 82
+
+    (40) statement -> EXIT . WHEN bool_expressions
+
+    WHEN            shift and go to state 118
+
+
+state 83
+
+    (34) statement -> DO . statement WHILE bool_expressions
+    (31) statement -> . ID ASSIGNMENT_SIGN expressions
+    (32) statement -> . IF bool_expressions THEN statement
+    (33) statement -> . IF bool_expressions THEN statement ELSE statement
+    (34) statement -> . DO statement WHILE bool_expressions
+    (35) statement -> . FOR ID ASSIGNMENT_SIGN counter DO statement
+    (36) statement -> . SWITCH expressions case_element default END
+    (37) statement -> . ID LPAR arguments_list RPAR
+    (38) statement -> . ID LBRACK expressions RBRACK ASSIGNMENT_SIGN expressions
+    (39) statement -> . RETURN expressions
+    (40) statement -> . EXIT WHEN bool_expressions
+    (41) statement -> . block
+    (42) statement -> . empty
+    (28) block -> . LBRACE statement_list RBRACE
+    (83) empty -> .
+
+    ID              shift and go to state 77
+    IF              shift and go to state 79
+    DO              shift and go to state 83
+    FOR             shift and go to state 86
+    SWITCH          shift and go to state 85
+    RETURN          shift and go to state 76
+    EXIT            shift and go to state 82
+    LBRACE          shift and go to state 45
+    WHILE           reduce using rule 83 (empty -> .)
+
+    empty                          shift and go to state 80
+    block                          shift and go to state 84
+    statement                      shift and go to state 119
+
+state 84
+
+    (41) statement -> block .
+
+    ELSE            reduce using rule 41 (statement -> block .)
+    SEMICOLON       reduce using rule 41 (statement -> block .)
+    WHILE           reduce using rule 41 (statement -> block .)
+
+
+state 85
+
+    (36) statement -> SWITCH . expressions case_element default END
+    (54) expressions -> . constant_expressions
+    (55) expressions -> . bool_expressions
+    (56) expressions -> . arithmetic_expressions
+    (57) expressions -> . ID
+    (58) expressions -> . ID LBRACK expressions RBRACK
+    (59) expressions -> . ID LPAR arguments_list RPAR
+    (60) expressions -> . LPAR expressions RPAR
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    ID              shift and go to state 57
+    LPAR            shift and go to state 88
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 62
+    expressions                    shift and go to state 120
+    constant_expressions           shift and go to state 59
+    bool_expressions               shift and go to state 71
+
+state 86
+
+    (35) statement -> FOR . ID ASSIGNMENT_SIGN counter DO statement
+
+    ID              shift and go to state 121
+
+
+state 87
+
+    (82) pair -> LPAR expressions . COMMA expressions RPAR
+
+    COMMA           shift and go to state 122
+
+
+state 88
+
+    (60) expressions -> LPAR . expressions RPAR
+    (54) expressions -> . constant_expressions
+    (55) expressions -> . bool_expressions
+    (56) expressions -> . arithmetic_expressions
+    (57) expressions -> . ID
+    (58) expressions -> . ID LBRACK expressions RBRACK
+    (59) expressions -> . ID LPAR arguments_list RPAR
+    (60) expressions -> . LPAR expressions RPAR
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    ID              shift and go to state 57
+    LPAR            shift and go to state 88
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 62
+    expressions                    shift and go to state 123
+    constant_expressions           shift and go to state 59
+    bool_expressions               shift and go to state 71
+
+state 89
+
+    (18) range -> NUMCONST DOUBLE_DOT NUMCONST .
+
+    RBRACK          reduce using rule 18 (range -> NUMCONST DOUBLE_DOT NUMCONST .)
+
+
+state 90
+
+    (19) range -> arithmetic_expressions DOUBLE_DOT arithmetic_expressions .
+
+    RBRACK          reduce using rule 19 (range -> arithmetic_expressions DOUBLE_DOT arithmetic_expressions .)
+
+
+state 91
+
+    (17) range -> ID DOUBLE_DOT ID .
+
+    RBRACK          reduce using rule 17 (range -> ID DOUBLE_DOT ID .)
+
+
+state 92
+
+    (71) bool_expressions -> AND pair .
+
+    COMMA           reduce using rule 71 (bool_expressions -> AND pair .)
+    RPAR            reduce using rule 71 (bool_expressions -> AND pair .)
+    DOUBLE_DOT      reduce using rule 71 (bool_expressions -> AND pair .)
+    RBRACK          reduce using rule 71 (bool_expressions -> AND pair .)
+    SEMICOLON       reduce using rule 71 (bool_expressions -> AND pair .)
+    WHILE           reduce using rule 71 (bool_expressions -> AND pair .)
+    ELSE            reduce using rule 71 (bool_expressions -> AND pair .)
+    THEN            reduce using rule 71 (bool_expressions -> AND pair .)
+    CASE            reduce using rule 71 (bool_expressions -> AND pair .)
+
+
+state 93
+
+    (73) bool_expressions -> AND THEN . pair
+    (82) pair -> . LPAR expressions COMMA expressions RPAR
+
+    LPAR            shift and go to state 47
+
+    pair                           shift and go to state 124
+
+state 94
+
+    (58) expressions -> ID LBRACK . expressions RBRACK
+    (54) expressions -> . constant_expressions
+    (55) expressions -> . bool_expressions
+    (56) expressions -> . arithmetic_expressions
+    (57) expressions -> . ID
+    (58) expressions -> . ID LBRACK expressions RBRACK
+    (59) expressions -> . ID LPAR arguments_list RPAR
+    (60) expressions -> . LPAR expressions RPAR
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    ID              shift and go to state 57
+    LPAR            shift and go to state 88
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 62
+    expressions                    shift and go to state 125
+    constant_expressions           shift and go to state 59
+    bool_expressions               shift and go to state 71
+
+state 95
+
+    (59) expressions -> ID LPAR . arguments_list RPAR
+    (43) arguments_list -> . multi_arguments
+    (44) arguments_list -> . expressions
+    (45) arguments_list -> . empty
+    (46) multi_arguments -> . multi_arguments COMMA expressions
+    (47) multi_arguments -> . expressions
+    (54) expressions -> . constant_expressions
+    (55) expressions -> . bool_expressions
+    (56) expressions -> . arithmetic_expressions
+    (57) expressions -> . ID
+    (58) expressions -> . ID LBRACK expressions RBRACK
+    (59) expressions -> . ID LPAR arguments_list RPAR
+    (60) expressions -> . LPAR expressions RPAR
+    (83) empty -> .
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    ID              shift and go to state 57
+    LPAR            shift and go to state 88
+    RPAR            reduce using rule 83 (empty -> .)
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 62
+    arguments_list                 shift and go to state 129
+    multi_arguments                shift and go to state 126
+    expressions                    shift and go to state 128
+    constant_expressions           shift and go to state 59
+    empty                          shift and go to state 127
+    bool_expressions               shift and go to state 71
+
+state 96
+
+    (69) bool_expressions -> EQ pair .
+
+    COMMA           reduce using rule 69 (bool_expressions -> EQ pair .)
+    RPAR            reduce using rule 69 (bool_expressions -> EQ pair .)
+    DOUBLE_DOT      reduce using rule 69 (bool_expressions -> EQ pair .)
+    RBRACK          reduce using rule 69 (bool_expressions -> EQ pair .)
+    SEMICOLON       reduce using rule 69 (bool_expressions -> EQ pair .)
+    WHILE           reduce using rule 69 (bool_expressions -> EQ pair .)
+    ELSE            reduce using rule 69 (bool_expressions -> EQ pair .)
+    THEN            reduce using rule 69 (bool_expressions -> EQ pair .)
+    CASE            reduce using rule 69 (bool_expressions -> EQ pair .)
+
+
+state 97
+
+    (68) bool_expressions -> GE pair .
+
+    COMMA           reduce using rule 68 (bool_expressions -> GE pair .)
+    RPAR            reduce using rule 68 (bool_expressions -> GE pair .)
+    DOUBLE_DOT      reduce using rule 68 (bool_expressions -> GE pair .)
+    RBRACK          reduce using rule 68 (bool_expressions -> GE pair .)
+    SEMICOLON       reduce using rule 68 (bool_expressions -> GE pair .)
+    WHILE           reduce using rule 68 (bool_expressions -> GE pair .)
+    ELSE            reduce using rule 68 (bool_expressions -> GE pair .)
+    THEN            reduce using rule 68 (bool_expressions -> GE pair .)
+    CASE            reduce using rule 68 (bool_expressions -> GE pair .)
+
+
+state 98
+
+    (66) bool_expressions -> LE pair .
+
+    COMMA           reduce using rule 66 (bool_expressions -> LE pair .)
+    RPAR            reduce using rule 66 (bool_expressions -> LE pair .)
+    DOUBLE_DOT      reduce using rule 66 (bool_expressions -> LE pair .)
+    RBRACK          reduce using rule 66 (bool_expressions -> LE pair .)
+    SEMICOLON       reduce using rule 66 (bool_expressions -> LE pair .)
+    WHILE           reduce using rule 66 (bool_expressions -> LE pair .)
+    ELSE            reduce using rule 66 (bool_expressions -> LE pair .)
+    THEN            reduce using rule 66 (bool_expressions -> LE pair .)
+    CASE            reduce using rule 66 (bool_expressions -> LE pair .)
+
+
+state 99
+
+    (74) bool_expressions -> OR ELSE . pair
+    (82) pair -> . LPAR expressions COMMA expressions RPAR
+
+    LPAR            shift and go to state 47
+
+    pair                           shift and go to state 130
+
+state 100
+
+    (72) bool_expressions -> OR pair .
+
+    COMMA           reduce using rule 72 (bool_expressions -> OR pair .)
+    RPAR            reduce using rule 72 (bool_expressions -> OR pair .)
+    DOUBLE_DOT      reduce using rule 72 (bool_expressions -> OR pair .)
+    RBRACK          reduce using rule 72 (bool_expressions -> OR pair .)
+    SEMICOLON       reduce using rule 72 (bool_expressions -> OR pair .)
+    WHILE           reduce using rule 72 (bool_expressions -> OR pair .)
+    ELSE            reduce using rule 72 (bool_expressions -> OR pair .)
+    THEN            reduce using rule 72 (bool_expressions -> OR pair .)
+    CASE            reduce using rule 72 (bool_expressions -> OR pair .)
+
+
+state 101
+
+    (82) pair -> LPAR expressions . COMMA expressions RPAR
+    (60) expressions -> LPAR expressions . RPAR
+
+    COMMA           shift and go to state 122
+    RPAR            shift and go to state 131
+
+
+state 102
+
+    (65) bool_expressions -> LT pair .
+
+    COMMA           reduce using rule 65 (bool_expressions -> LT pair .)
+    RPAR            reduce using rule 65 (bool_expressions -> LT pair .)
+    DOUBLE_DOT      reduce using rule 65 (bool_expressions -> LT pair .)
+    RBRACK          reduce using rule 65 (bool_expressions -> LT pair .)
+    SEMICOLON       reduce using rule 65 (bool_expressions -> LT pair .)
+    WHILE           reduce using rule 65 (bool_expressions -> LT pair .)
+    ELSE            reduce using rule 65 (bool_expressions -> LT pair .)
+    THEN            reduce using rule 65 (bool_expressions -> LT pair .)
+    CASE            reduce using rule 65 (bool_expressions -> LT pair .)
+
+
+state 103
+
+    (70) bool_expressions -> NEQ pair .
+
+    COMMA           reduce using rule 70 (bool_expressions -> NEQ pair .)
+    RPAR            reduce using rule 70 (bool_expressions -> NEQ pair .)
+    DOUBLE_DOT      reduce using rule 70 (bool_expressions -> NEQ pair .)
+    RBRACK          reduce using rule 70 (bool_expressions -> NEQ pair .)
+    SEMICOLON       reduce using rule 70 (bool_expressions -> NEQ pair .)
+    WHILE           reduce using rule 70 (bool_expressions -> NEQ pair .)
+    ELSE            reduce using rule 70 (bool_expressions -> NEQ pair .)
+    THEN            reduce using rule 70 (bool_expressions -> NEQ pair .)
+    CASE            reduce using rule 70 (bool_expressions -> NEQ pair .)
+
+
+state 104
+
+    (67) bool_expressions -> GT pair .
+
+    COMMA           reduce using rule 67 (bool_expressions -> GT pair .)
+    RPAR            reduce using rule 67 (bool_expressions -> GT pair .)
+    DOUBLE_DOT      reduce using rule 67 (bool_expressions -> GT pair .)
+    RBRACK          reduce using rule 67 (bool_expressions -> GT pair .)
+    SEMICOLON       reduce using rule 67 (bool_expressions -> GT pair .)
+    WHILE           reduce using rule 67 (bool_expressions -> GT pair .)
+    ELSE            reduce using rule 67 (bool_expressions -> GT pair .)
+    THEN            reduce using rule 67 (bool_expressions -> GT pair .)
+    CASE            reduce using rule 67 (bool_expressions -> GT pair .)
+
+
+state 105
+
+    (75) bool_expressions -> NOT expressions .
+
+    COMMA           reduce using rule 75 (bool_expressions -> NOT expressions .)
+    RPAR            reduce using rule 75 (bool_expressions -> NOT expressions .)
+    DOUBLE_DOT      reduce using rule 75 (bool_expressions -> NOT expressions .)
+    RBRACK          reduce using rule 75 (bool_expressions -> NOT expressions .)
+    SEMICOLON       reduce using rule 75 (bool_expressions -> NOT expressions .)
+    WHILE           reduce using rule 75 (bool_expressions -> NOT expressions .)
+    ELSE            reduce using rule 75 (bool_expressions -> NOT expressions .)
+    THEN            reduce using rule 75 (bool_expressions -> NOT expressions .)
+    CASE            reduce using rule 75 (bool_expressions -> NOT expressions .)
+
+
+state 106
+
+    (21) initializer -> LBRACE initializer_list RBRACE .
+
+    SEMICOLON       reduce using rule 21 (initializer -> LBRACE initializer_list RBRACE .)
+    COMMA           reduce using rule 21 (initializer -> LBRACE initializer_list RBRACE .)
+
+
+state 107
+
+    (22) initializer_list -> constant_expressions COMMA . initializer_list
+    (22) initializer_list -> . constant_expressions COMMA initializer_list
+    (23) initializer_list -> . constant_expressions
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+
+    constant_expressions           shift and go to state 73
+    initializer_list               shift and go to state 132
+
+state 108
+
+    (26) procedure -> PROCEDURE ID parameters LBRACE . declarations_list block RBRACE SEMICOLON
+    (2) declarations_list -> . declarations
+    (3) declarations_list -> . declarations_list declarations
+    (4) declarations -> . type_specifiers declarator_list SEMICOLON
+    (5) declarations -> . empty
+    (6) type_specifiers -> . INT
+    (7) type_specifiers -> . REAL
+    (8) type_specifiers -> . CHAR
+    (9) type_specifiers -> . BOOLEAN
+    (83) empty -> .
+
+  ! shift/reduce conflict for INT resolved as shift
+  ! shift/reduce conflict for REAL resolved as shift
+  ! shift/reduce conflict for CHAR resolved as shift
+  ! shift/reduce conflict for BOOLEAN resolved as shift
+    INT             shift and go to state 9
+    REAL            shift and go to state 10
+    CHAR            shift and go to state 5
+    BOOLEAN         shift and go to state 8
+    LBRACE          reduce using rule 83 (empty -> .)
+
+  ! INT             [ reduce using rule 83 (empty -> .) ]
+  ! REAL            [ reduce using rule 83 (empty -> .) ]
+  ! CHAR            [ reduce using rule 83 (empty -> .) ]
+  ! BOOLEAN         [ reduce using rule 83 (empty -> .) ]
+
+    empty                          shift and go to state 6
+    declarations                   shift and go to state 4
+    type_specifiers                shift and go to state 7
+    declarations_list              shift and go to state 133
+
+state 109
+
+    (27) parameters -> LPAR declarations_list . RPAR
+    (3) declarations_list -> declarations_list . declarations
+    (4) declarations -> . type_specifiers declarator_list SEMICOLON
+    (5) declarations -> . empty
+    (6) type_specifiers -> . INT
+    (7) type_specifiers -> . REAL
+    (8) type_specifiers -> . CHAR
+    (9) type_specifiers -> . BOOLEAN
+    (83) empty -> .
+
+  ! shift/reduce conflict for RPAR resolved as shift
+  ! shift/reduce conflict for INT resolved as shift
+  ! shift/reduce conflict for REAL resolved as shift
+  ! shift/reduce conflict for CHAR resolved as shift
+  ! shift/reduce conflict for BOOLEAN resolved as shift
+    RPAR            shift and go to state 134
+    INT             shift and go to state 9
+    REAL            shift and go to state 10
+    CHAR            shift and go to state 5
+    BOOLEAN         shift and go to state 8
+
+  ! RPAR            [ reduce using rule 83 (empty -> .) ]
+  ! INT             [ reduce using rule 83 (empty -> .) ]
+  ! REAL            [ reduce using rule 83 (empty -> .) ]
+  ! CHAR            [ reduce using rule 83 (empty -> .) ]
+  ! BOOLEAN         [ reduce using rule 83 (empty -> .) ]
+
+    declarations                   shift and go to state 16
+    empty                          shift and go to state 6
+    type_specifiers                shift and go to state 7
+
+state 110
+
+    (39) statement -> RETURN expressions .
+
+    ELSE            reduce using rule 39 (statement -> RETURN expressions .)
+    SEMICOLON       reduce using rule 39 (statement -> RETURN expressions .)
+    WHILE           reduce using rule 39 (statement -> RETURN expressions .)
+
+
+state 111
+
+    (31) statement -> ID ASSIGNMENT_SIGN . expressions
+    (54) expressions -> . constant_expressions
+    (55) expressions -> . bool_expressions
+    (56) expressions -> . arithmetic_expressions
+    (57) expressions -> . ID
+    (58) expressions -> . ID LBRACK expressions RBRACK
+    (59) expressions -> . ID LPAR arguments_list RPAR
+    (60) expressions -> . LPAR expressions RPAR
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    ID              shift and go to state 57
+    LPAR            shift and go to state 88
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 62
+    expressions                    shift and go to state 135
+    constant_expressions           shift and go to state 59
+    bool_expressions               shift and go to state 71
+
+state 112
+
+    (38) statement -> ID LBRACK . expressions RBRACK ASSIGNMENT_SIGN expressions
+    (54) expressions -> . constant_expressions
+    (55) expressions -> . bool_expressions
+    (56) expressions -> . arithmetic_expressions
+    (57) expressions -> . ID
+    (58) expressions -> . ID LBRACK expressions RBRACK
+    (59) expressions -> . ID LPAR arguments_list RPAR
+    (60) expressions -> . LPAR expressions RPAR
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    ID              shift and go to state 57
+    LPAR            shift and go to state 88
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 62
+    expressions                    shift and go to state 136
+    constant_expressions           shift and go to state 59
+    bool_expressions               shift and go to state 71
+
+state 113
+
+    (37) statement -> ID LPAR . arguments_list RPAR
+    (43) arguments_list -> . multi_arguments
+    (44) arguments_list -> . expressions
+    (45) arguments_list -> . empty
+    (46) multi_arguments -> . multi_arguments COMMA expressions
+    (47) multi_arguments -> . expressions
+    (54) expressions -> . constant_expressions
+    (55) expressions -> . bool_expressions
+    (56) expressions -> . arithmetic_expressions
+    (57) expressions -> . ID
+    (58) expressions -> . ID LBRACK expressions RBRACK
+    (59) expressions -> . ID LPAR arguments_list RPAR
+    (60) expressions -> . LPAR expressions RPAR
+    (83) empty -> .
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    ID              shift and go to state 57
+    LPAR            shift and go to state 88
+    RPAR            reduce using rule 83 (empty -> .)
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 62
+    arguments_list                 shift and go to state 137
+    multi_arguments                shift and go to state 126
+    expressions                    shift and go to state 128
+    constant_expressions           shift and go to state 59
+    empty                          shift and go to state 127
+    bool_expressions               shift and go to state 71
+
+state 114
+
+    (30) statement_list -> statement_list statement . SEMICOLON
+
+    SEMICOLON       shift and go to state 138
+
+
+state 115
+
+    (28) block -> LBRACE statement_list RBRACE .
+
+    WHILE           reduce using rule 28 (block -> LBRACE statement_list RBRACE .)
+    ELSE            reduce using rule 28 (block -> LBRACE statement_list RBRACE .)
+    SEMICOLON       reduce using rule 28 (block -> LBRACE statement_list RBRACE .)
+    END             reduce using rule 28 (block -> LBRACE statement_list RBRACE .)
+    RBRACE          reduce using rule 28 (block -> LBRACE statement_list RBRACE .)
+    $end            reduce using rule 28 (block -> LBRACE statement_list RBRACE .)
+    CASE            reduce using rule 28 (block -> LBRACE statement_list RBRACE .)
+    DEFAULT         reduce using rule 28 (block -> LBRACE statement_list RBRACE .)
+
+
+state 116
+
+    (32) statement -> IF bool_expressions . THEN statement
+    (33) statement -> IF bool_expressions . THEN statement ELSE statement
+
+    THEN            shift and go to state 139
+
+
+state 117
+
+    (29) statement_list -> statement SEMICOLON .
+
+    RBRACE          reduce using rule 29 (statement_list -> statement SEMICOLON .)
+    ID              reduce using rule 29 (statement_list -> statement SEMICOLON .)
+    IF              reduce using rule 29 (statement_list -> statement SEMICOLON .)
+    DO              reduce using rule 29 (statement_list -> statement SEMICOLON .)
+    FOR             reduce using rule 29 (statement_list -> statement SEMICOLON .)
+    SWITCH          reduce using rule 29 (statement_list -> statement SEMICOLON .)
+    RETURN          reduce using rule 29 (statement_list -> statement SEMICOLON .)
+    EXIT            reduce using rule 29 (statement_list -> statement SEMICOLON .)
+    LBRACE          reduce using rule 29 (statement_list -> statement SEMICOLON .)
+    SEMICOLON       reduce using rule 29 (statement_list -> statement SEMICOLON .)
+
+
+state 118
+
+    (40) statement -> EXIT WHEN . bool_expressions
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+
+    bool_expressions               shift and go to state 140
+
+state 119
+
+    (34) statement -> DO statement . WHILE bool_expressions
+
+    WHILE           shift and go to state 141
+
+
+state 120
+
+    (36) statement -> SWITCH expressions . case_element default END
+    (50) case_element -> . CASE NUMCONST COLON block
+    (51) case_element -> . case_element CASE NUMCONST COLON block
+
+    CASE            shift and go to state 143
+
+    case_element                   shift and go to state 142
+
+state 121
+
+    (35) statement -> FOR ID . ASSIGNMENT_SIGN counter DO statement
+
+    ASSIGNMENT_SIGN shift and go to state 144
+
+
+state 122
+
+    (82) pair -> LPAR expressions COMMA . expressions RPAR
+    (54) expressions -> . constant_expressions
+    (55) expressions -> . bool_expressions
+    (56) expressions -> . arithmetic_expressions
+    (57) expressions -> . ID
+    (58) expressions -> . ID LBRACK expressions RBRACK
+    (59) expressions -> . ID LPAR arguments_list RPAR
+    (60) expressions -> . LPAR expressions RPAR
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    ID              shift and go to state 57
+    LPAR            shift and go to state 88
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 62
+    expressions                    shift and go to state 145
+    constant_expressions           shift and go to state 59
+    bool_expressions               shift and go to state 71
+
+state 123
+
+    (60) expressions -> LPAR expressions . RPAR
+
+    RPAR            shift and go to state 131
+
+
+state 124
+
+    (73) bool_expressions -> AND THEN pair .
+
+    COMMA           reduce using rule 73 (bool_expressions -> AND THEN pair .)
+    RPAR            reduce using rule 73 (bool_expressions -> AND THEN pair .)
+    DOUBLE_DOT      reduce using rule 73 (bool_expressions -> AND THEN pair .)
+    RBRACK          reduce using rule 73 (bool_expressions -> AND THEN pair .)
+    SEMICOLON       reduce using rule 73 (bool_expressions -> AND THEN pair .)
+    WHILE           reduce using rule 73 (bool_expressions -> AND THEN pair .)
+    ELSE            reduce using rule 73 (bool_expressions -> AND THEN pair .)
+    THEN            reduce using rule 73 (bool_expressions -> AND THEN pair .)
+    CASE            reduce using rule 73 (bool_expressions -> AND THEN pair .)
+
+
+state 125
+
+    (58) expressions -> ID LBRACK expressions . RBRACK
+
+    RBRACK          shift and go to state 146
+
+
+state 126
+
+    (43) arguments_list -> multi_arguments .
+    (46) multi_arguments -> multi_arguments . COMMA expressions
+
+    RPAR            reduce using rule 43 (arguments_list -> multi_arguments .)
+    COMMA           shift and go to state 147
+
+
+state 127
+
+    (45) arguments_list -> empty .
+
+    RPAR            reduce using rule 45 (arguments_list -> empty .)
+
+
+state 128
+
+    (44) arguments_list -> expressions .
+    (47) multi_arguments -> expressions .
+
+  ! reduce/reduce conflict for RPAR resolved using rule 44 (arguments_list -> expressions .)
+    RPAR            reduce using rule 44 (arguments_list -> expressions .)
+    COMMA           reduce using rule 47 (multi_arguments -> expressions .)
+
+  ! RPAR            [ reduce using rule 47 (multi_arguments -> expressions .) ]
+
+
+state 129
+
+    (59) expressions -> ID LPAR arguments_list . RPAR
+
+    RPAR            shift and go to state 148
+
+
+state 130
+
+    (74) bool_expressions -> OR ELSE pair .
+
+    COMMA           reduce using rule 74 (bool_expressions -> OR ELSE pair .)
+    RPAR            reduce using rule 74 (bool_expressions -> OR ELSE pair .)
+    DOUBLE_DOT      reduce using rule 74 (bool_expressions -> OR ELSE pair .)
+    RBRACK          reduce using rule 74 (bool_expressions -> OR ELSE pair .)
+    SEMICOLON       reduce using rule 74 (bool_expressions -> OR ELSE pair .)
+    WHILE           reduce using rule 74 (bool_expressions -> OR ELSE pair .)
+    ELSE            reduce using rule 74 (bool_expressions -> OR ELSE pair .)
+    THEN            reduce using rule 74 (bool_expressions -> OR ELSE pair .)
+    CASE            reduce using rule 74 (bool_expressions -> OR ELSE pair .)
+
+
+state 131
+
+    (60) expressions -> LPAR expressions RPAR .
+
+    COMMA           reduce using rule 60 (expressions -> LPAR expressions RPAR .)
+    RPAR            reduce using rule 60 (expressions -> LPAR expressions RPAR .)
+    CASE            reduce using rule 60 (expressions -> LPAR expressions RPAR .)
+    DOUBLE_DOT      reduce using rule 60 (expressions -> LPAR expressions RPAR .)
+    RBRACK          reduce using rule 60 (expressions -> LPAR expressions RPAR .)
+    SEMICOLON       reduce using rule 60 (expressions -> LPAR expressions RPAR .)
+    WHILE           reduce using rule 60 (expressions -> LPAR expressions RPAR .)
+    ELSE            reduce using rule 60 (expressions -> LPAR expressions RPAR .)
+    THEN            reduce using rule 60 (expressions -> LPAR expressions RPAR .)
+
+
+state 132
+
+    (22) initializer_list -> constant_expressions COMMA initializer_list .
+
+    RBRACE          reduce using rule 22 (initializer_list -> constant_expressions COMMA initializer_list .)
+
+
+state 133
+
+    (26) procedure -> PROCEDURE ID parameters LBRACE declarations_list . block RBRACE SEMICOLON
+    (3) declarations_list -> declarations_list . declarations
+    (28) block -> . LBRACE statement_list RBRACE
+    (4) declarations -> . type_specifiers declarator_list SEMICOLON
+    (5) declarations -> . empty
+    (6) type_specifiers -> . INT
+    (7) type_specifiers -> . REAL
+    (8) type_specifiers -> . CHAR
+    (9) type_specifiers -> . BOOLEAN
+    (83) empty -> .
+
+  ! shift/reduce conflict for LBRACE resolved as shift
+  ! shift/reduce conflict for INT resolved as shift
+  ! shift/reduce conflict for REAL resolved as shift
+  ! shift/reduce conflict for CHAR resolved as shift
+  ! shift/reduce conflict for BOOLEAN resolved as shift
+    LBRACE          shift and go to state 45
+    INT             shift and go to state 9
+    REAL            shift and go to state 10
+    CHAR            shift and go to state 5
+    BOOLEAN         shift and go to state 8
+
+  ! LBRACE          [ reduce using rule 83 (empty -> .) ]
+  ! INT             [ reduce using rule 83 (empty -> .) ]
+  ! REAL            [ reduce using rule 83 (empty -> .) ]
+  ! CHAR            [ reduce using rule 83 (empty -> .) ]
+  ! BOOLEAN         [ reduce using rule 83 (empty -> .) ]
+
+    block                          shift and go to state 149
+    empty                          shift and go to state 6
+    type_specifiers                shift and go to state 7
+    declarations                   shift and go to state 16
+
+state 134
+
+    (27) parameters -> LPAR declarations_list RPAR .
+
+    LBRACE          reduce using rule 27 (parameters -> LPAR declarations_list RPAR .)
+
+
+state 135
+
+    (31) statement -> ID ASSIGNMENT_SIGN expressions .
+
+    ELSE            reduce using rule 31 (statement -> ID ASSIGNMENT_SIGN expressions .)
+    SEMICOLON       reduce using rule 31 (statement -> ID ASSIGNMENT_SIGN expressions .)
+    WHILE           reduce using rule 31 (statement -> ID ASSIGNMENT_SIGN expressions .)
+
+
+state 136
+
+    (38) statement -> ID LBRACK expressions . RBRACK ASSIGNMENT_SIGN expressions
+
+    RBRACK          shift and go to state 150
+
+
+state 137
+
+    (37) statement -> ID LPAR arguments_list . RPAR
+
+    RPAR            shift and go to state 151
+
+
+state 138
+
+    (30) statement_list -> statement_list statement SEMICOLON .
+
+    RBRACE          reduce using rule 30 (statement_list -> statement_list statement SEMICOLON .)
+    ID              reduce using rule 30 (statement_list -> statement_list statement SEMICOLON .)
+    IF              reduce using rule 30 (statement_list -> statement_list statement SEMICOLON .)
+    DO              reduce using rule 30 (statement_list -> statement_list statement SEMICOLON .)
+    FOR             reduce using rule 30 (statement_list -> statement_list statement SEMICOLON .)
+    SWITCH          reduce using rule 30 (statement_list -> statement_list statement SEMICOLON .)
+    RETURN          reduce using rule 30 (statement_list -> statement_list statement SEMICOLON .)
+    EXIT            reduce using rule 30 (statement_list -> statement_list statement SEMICOLON .)
+    LBRACE          reduce using rule 30 (statement_list -> statement_list statement SEMICOLON .)
+    SEMICOLON       reduce using rule 30 (statement_list -> statement_list statement SEMICOLON .)
+
+
+state 139
+
+    (32) statement -> IF bool_expressions THEN . statement
+    (33) statement -> IF bool_expressions THEN . statement ELSE statement
+    (31) statement -> . ID ASSIGNMENT_SIGN expressions
+    (32) statement -> . IF bool_expressions THEN statement
+    (33) statement -> . IF bool_expressions THEN statement ELSE statement
+    (34) statement -> . DO statement WHILE bool_expressions
+    (35) statement -> . FOR ID ASSIGNMENT_SIGN counter DO statement
+    (36) statement -> . SWITCH expressions case_element default END
+    (37) statement -> . ID LPAR arguments_list RPAR
+    (38) statement -> . ID LBRACK expressions RBRACK ASSIGNMENT_SIGN expressions
+    (39) statement -> . RETURN expressions
+    (40) statement -> . EXIT WHEN bool_expressions
+    (41) statement -> . block
+    (42) statement -> . empty
+    (28) block -> . LBRACE statement_list RBRACE
+    (83) empty -> .
+
+    ID              shift and go to state 77
+    IF              shift and go to state 79
+    DO              shift and go to state 83
+    FOR             shift and go to state 86
+    SWITCH          shift and go to state 85
+    RETURN          shift and go to state 76
+    EXIT            shift and go to state 82
+    LBRACE          shift and go to state 45
+    ELSE            reduce using rule 83 (empty -> .)
+    SEMICOLON       reduce using rule 83 (empty -> .)
+    WHILE           reduce using rule 83 (empty -> .)
+
+    empty                          shift and go to state 80
+    block                          shift and go to state 84
+    statement                      shift and go to state 152
+
+state 140
+
+    (40) statement -> EXIT WHEN bool_expressions .
+
+    ELSE            reduce using rule 40 (statement -> EXIT WHEN bool_expressions .)
+    SEMICOLON       reduce using rule 40 (statement -> EXIT WHEN bool_expressions .)
+    WHILE           reduce using rule 40 (statement -> EXIT WHEN bool_expressions .)
+
+
+state 141
+
+    (34) statement -> DO statement WHILE . bool_expressions
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+
+    bool_expressions               shift and go to state 153
+
+state 142
+
+    (36) statement -> SWITCH expressions case_element . default END
+    (51) case_element -> case_element . CASE NUMCONST COLON block
+    (52) default -> . DEFAULT COLON block
+    (53) default -> . empty
+    (83) empty -> .
+
+    CASE            shift and go to state 154
+    DEFAULT         shift and go to state 156
+    END             reduce using rule 83 (empty -> .)
+
+    empty                          shift and go to state 157
+    default                        shift and go to state 155
+
+state 143
+
+    (50) case_element -> CASE . NUMCONST COLON block
+
+    NUMCONST        shift and go to state 158
+
+
+state 144
+
+    (35) statement -> FOR ID ASSIGNMENT_SIGN . counter DO statement
+    (48) counter -> . NUMCONST UPTO NUMCONST
+    (49) counter -> . NUMCONST DOWNTO NUMCONST
+
+    NUMCONST        shift and go to state 159
+
+    counter                        shift and go to state 160
+
+state 145
+
+    (82) pair -> LPAR expressions COMMA expressions . RPAR
+
+    RPAR            shift and go to state 161
+
+
+state 146
+
+    (58) expressions -> ID LBRACK expressions RBRACK .
+
+    COMMA           reduce using rule 58 (expressions -> ID LBRACK expressions RBRACK .)
+    RPAR            reduce using rule 58 (expressions -> ID LBRACK expressions RBRACK .)
+    CASE            reduce using rule 58 (expressions -> ID LBRACK expressions RBRACK .)
+    DOUBLE_DOT      reduce using rule 58 (expressions -> ID LBRACK expressions RBRACK .)
+    RBRACK          reduce using rule 58 (expressions -> ID LBRACK expressions RBRACK .)
+    SEMICOLON       reduce using rule 58 (expressions -> ID LBRACK expressions RBRACK .)
+    WHILE           reduce using rule 58 (expressions -> ID LBRACK expressions RBRACK .)
+    ELSE            reduce using rule 58 (expressions -> ID LBRACK expressions RBRACK .)
+    THEN            reduce using rule 58 (expressions -> ID LBRACK expressions RBRACK .)
+
+
+state 147
+
+    (46) multi_arguments -> multi_arguments COMMA . expressions
+    (54) expressions -> . constant_expressions
+    (55) expressions -> . bool_expressions
+    (56) expressions -> . arithmetic_expressions
+    (57) expressions -> . ID
+    (58) expressions -> . ID LBRACK expressions RBRACK
+    (59) expressions -> . ID LPAR arguments_list RPAR
+    (60) expressions -> . LPAR expressions RPAR
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    ID              shift and go to state 57
+    LPAR            shift and go to state 88
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 62
+    expressions                    shift and go to state 162
+    constant_expressions           shift and go to state 59
+    bool_expressions               shift and go to state 71
+
+state 148
+
+    (59) expressions -> ID LPAR arguments_list RPAR .
+
+    COMMA           reduce using rule 59 (expressions -> ID LPAR arguments_list RPAR .)
+    RPAR            reduce using rule 59 (expressions -> ID LPAR arguments_list RPAR .)
+    CASE            reduce using rule 59 (expressions -> ID LPAR arguments_list RPAR .)
+    DOUBLE_DOT      reduce using rule 59 (expressions -> ID LPAR arguments_list RPAR .)
+    RBRACK          reduce using rule 59 (expressions -> ID LPAR arguments_list RPAR .)
+    SEMICOLON       reduce using rule 59 (expressions -> ID LPAR arguments_list RPAR .)
+    WHILE           reduce using rule 59 (expressions -> ID LPAR arguments_list RPAR .)
+    ELSE            reduce using rule 59 (expressions -> ID LPAR arguments_list RPAR .)
+    THEN            reduce using rule 59 (expressions -> ID LPAR arguments_list RPAR .)
+
+
+state 149
+
+    (26) procedure -> PROCEDURE ID parameters LBRACE declarations_list block . RBRACE SEMICOLON
+
+    RBRACE          shift and go to state 163
+
+
+state 150
+
+    (38) statement -> ID LBRACK expressions RBRACK . ASSIGNMENT_SIGN expressions
+
+    ASSIGNMENT_SIGN shift and go to state 164
+
+
+state 151
+
+    (37) statement -> ID LPAR arguments_list RPAR .
+
+    ELSE            reduce using rule 37 (statement -> ID LPAR arguments_list RPAR .)
+    SEMICOLON       reduce using rule 37 (statement -> ID LPAR arguments_list RPAR .)
+    WHILE           reduce using rule 37 (statement -> ID LPAR arguments_list RPAR .)
+
+
+state 152
+
+    (32) statement -> IF bool_expressions THEN statement .
+    (33) statement -> IF bool_expressions THEN statement . ELSE statement
+
+  ! shift/reduce conflict for ELSE resolved as shift
+    SEMICOLON       reduce using rule 32 (statement -> IF bool_expressions THEN statement .)
+    WHILE           reduce using rule 32 (statement -> IF bool_expressions THEN statement .)
+    ELSE            shift and go to state 165
+
+  ! ELSE            [ reduce using rule 32 (statement -> IF bool_expressions THEN statement .) ]
+
+
+state 153
+
+    (34) statement -> DO statement WHILE bool_expressions .
+
+    ELSE            reduce using rule 34 (statement -> DO statement WHILE bool_expressions .)
+    SEMICOLON       reduce using rule 34 (statement -> DO statement WHILE bool_expressions .)
+    WHILE           reduce using rule 34 (statement -> DO statement WHILE bool_expressions .)
+
+
+state 154
+
+    (51) case_element -> case_element CASE . NUMCONST COLON block
+
+    NUMCONST        shift and go to state 166
+
+
+state 155
+
+    (36) statement -> SWITCH expressions case_element default . END
+
+    END             shift and go to state 167
+
+
+state 156
+
+    (52) default -> DEFAULT . COLON block
+
+    COLON           shift and go to state 168
+
+
+state 157
+
+    (53) default -> empty .
+
+    END             reduce using rule 53 (default -> empty .)
+
+
+state 158
+
+    (50) case_element -> CASE NUMCONST . COLON block
+
+    COLON           shift and go to state 169
+
+
+state 159
+
+    (48) counter -> NUMCONST . UPTO NUMCONST
+    (49) counter -> NUMCONST . DOWNTO NUMCONST
+
+    UPTO            shift and go to state 170
+    DOWNTO          shift and go to state 171
+
+
+state 160
+
+    (35) statement -> FOR ID ASSIGNMENT_SIGN counter . DO statement
+
+    DO              shift and go to state 172
+
+
+state 161
+
+    (82) pair -> LPAR expressions COMMA expressions RPAR .
+
+    DOUBLE_DOT      reduce using rule 82 (pair -> LPAR expressions COMMA expressions RPAR .)
+    COMMA           reduce using rule 82 (pair -> LPAR expressions COMMA expressions RPAR .)
+    RBRACK          reduce using rule 82 (pair -> LPAR expressions COMMA expressions RPAR .)
+    RPAR            reduce using rule 82 (pair -> LPAR expressions COMMA expressions RPAR .)
+    SEMICOLON       reduce using rule 82 (pair -> LPAR expressions COMMA expressions RPAR .)
+    WHILE           reduce using rule 82 (pair -> LPAR expressions COMMA expressions RPAR .)
+    ELSE            reduce using rule 82 (pair -> LPAR expressions COMMA expressions RPAR .)
+    THEN            reduce using rule 82 (pair -> LPAR expressions COMMA expressions RPAR .)
+    CASE            reduce using rule 82 (pair -> LPAR expressions COMMA expressions RPAR .)
+
+
+state 162
+
+    (46) multi_arguments -> multi_arguments COMMA expressions .
+
+    COMMA           reduce using rule 46 (multi_arguments -> multi_arguments COMMA expressions .)
+    RPAR            reduce using rule 46 (multi_arguments -> multi_arguments COMMA expressions .)
+
+
+state 163
+
+    (26) procedure -> PROCEDURE ID parameters LBRACE declarations_list block RBRACE . SEMICOLON
+
+    SEMICOLON       shift and go to state 173
+
+
+state 164
+
+    (38) statement -> ID LBRACK expressions RBRACK ASSIGNMENT_SIGN . expressions
+    (54) expressions -> . constant_expressions
+    (55) expressions -> . bool_expressions
+    (56) expressions -> . arithmetic_expressions
+    (57) expressions -> . ID
+    (58) expressions -> . ID LBRACK expressions RBRACK
+    (59) expressions -> . ID LPAR arguments_list RPAR
+    (60) expressions -> . LPAR expressions RPAR
+    (61) constant_expressions -> . NUMCONST
+    (62) constant_expressions -> . REALCONST
+    (63) constant_expressions -> . CHARCONST
+    (64) constant_expressions -> . BOOLCONST
+    (65) bool_expressions -> . LT pair
+    (66) bool_expressions -> . LE pair
+    (67) bool_expressions -> . GT pair
+    (68) bool_expressions -> . GE pair
+    (69) bool_expressions -> . EQ pair
+    (70) bool_expressions -> . NEQ pair
+    (71) bool_expressions -> . AND pair
+    (72) bool_expressions -> . OR pair
+    (73) bool_expressions -> . AND THEN pair
+    (74) bool_expressions -> . OR ELSE pair
+    (75) bool_expressions -> . NOT expressions
+    (76) arithmetic_expressions -> . PLUS pair
+    (77) arithmetic_expressions -> . MINUS pair
+    (78) arithmetic_expressions -> . MULT pair
+    (79) arithmetic_expressions -> . DIV pair
+    (80) arithmetic_expressions -> . MOD pair
+    (81) arithmetic_expressions -> . MINUS expressions
+
+    ID              shift and go to state 57
+    LPAR            shift and go to state 88
+    NUMCONST        shift and go to state 38
+    REALCONST       shift and go to state 39
+    CHARCONST       shift and go to state 37
+    BOOLCONST       shift and go to state 42
+    LT              shift and go to state 66
+    LE              shift and go to state 61
+    GT              shift and go to state 69
+    GE              shift and go to state 60
+    EQ              shift and go to state 58
+    NEQ             shift and go to state 67
+    AND             shift and go to state 56
+    OR              shift and go to state 63
+    NOT             shift and go to state 70
+    PLUS            shift and go to state 29
+    MINUS           shift and go to state 34
+    MULT            shift and go to state 27
+    DIV             shift and go to state 30
+    MOD             shift and go to state 26
+
+    arithmetic_expressions         shift and go to state 62
+    expressions                    shift and go to state 174
+    constant_expressions           shift and go to state 59
+    bool_expressions               shift and go to state 71
+
+state 165
+
+    (33) statement -> IF bool_expressions THEN statement ELSE . statement
+    (31) statement -> . ID ASSIGNMENT_SIGN expressions
+    (32) statement -> . IF bool_expressions THEN statement
+    (33) statement -> . IF bool_expressions THEN statement ELSE statement
+    (34) statement -> . DO statement WHILE bool_expressions
+    (35) statement -> . FOR ID ASSIGNMENT_SIGN counter DO statement
+    (36) statement -> . SWITCH expressions case_element default END
+    (37) statement -> . ID LPAR arguments_list RPAR
+    (38) statement -> . ID LBRACK expressions RBRACK ASSIGNMENT_SIGN expressions
+    (39) statement -> . RETURN expressions
+    (40) statement -> . EXIT WHEN bool_expressions
+    (41) statement -> . block
+    (42) statement -> . empty
+    (28) block -> . LBRACE statement_list RBRACE
+    (83) empty -> .
+
+    ID              shift and go to state 77
+    IF              shift and go to state 79
+    DO              shift and go to state 83
+    FOR             shift and go to state 86
+    SWITCH          shift and go to state 85
+    RETURN          shift and go to state 76
+    EXIT            shift and go to state 82
+    LBRACE          shift and go to state 45
+    ELSE            reduce using rule 83 (empty -> .)
+    SEMICOLON       reduce using rule 83 (empty -> .)
+    WHILE           reduce using rule 83 (empty -> .)
+
+    empty                          shift and go to state 80
+    block                          shift and go to state 84
+    statement                      shift and go to state 175
+
+state 166
+
+    (51) case_element -> case_element CASE NUMCONST . COLON block
+
+    COLON           shift and go to state 176
+
+
+state 167
+
+    (36) statement -> SWITCH expressions case_element default END .
+
+    ELSE            reduce using rule 36 (statement -> SWITCH expressions case_element default END .)
+    SEMICOLON       reduce using rule 36 (statement -> SWITCH expressions case_element default END .)
+    WHILE           reduce using rule 36 (statement -> SWITCH expressions case_element default END .)
+
+
+state 168
+
+    (52) default -> DEFAULT COLON . block
+    (28) block -> . LBRACE statement_list RBRACE
+
+    LBRACE          shift and go to state 45
+
+    block                          shift and go to state 177
+
+state 169
+
+    (50) case_element -> CASE NUMCONST COLON . block
+    (28) block -> . LBRACE statement_list RBRACE
+
+    LBRACE          shift and go to state 45
+
+    block                          shift and go to state 178
+
+state 170
+
+    (48) counter -> NUMCONST UPTO . NUMCONST
+
+    NUMCONST        shift and go to state 179
+
+
+state 171
+
+    (49) counter -> NUMCONST DOWNTO . NUMCONST
+
+    NUMCONST        shift and go to state 180
+
+
+state 172
+
+    (35) statement -> FOR ID ASSIGNMENT_SIGN counter DO . statement
+    (31) statement -> . ID ASSIGNMENT_SIGN expressions
+    (32) statement -> . IF bool_expressions THEN statement
+    (33) statement -> . IF bool_expressions THEN statement ELSE statement
+    (34) statement -> . DO statement WHILE bool_expressions
+    (35) statement -> . FOR ID ASSIGNMENT_SIGN counter DO statement
+    (36) statement -> . SWITCH expressions case_element default END
+    (37) statement -> . ID LPAR arguments_list RPAR
+    (38) statement -> . ID LBRACK expressions RBRACK ASSIGNMENT_SIGN expressions
+    (39) statement -> . RETURN expressions
+    (40) statement -> . EXIT WHEN bool_expressions
+    (41) statement -> . block
+    (42) statement -> . empty
+    (28) block -> . LBRACE statement_list RBRACE
+    (83) empty -> .
+
+    ID              shift and go to state 77
+    IF              shift and go to state 79
+    DO              shift and go to state 83
+    FOR             shift and go to state 86
+    SWITCH          shift and go to state 85
+    RETURN          shift and go to state 76
+    EXIT            shift and go to state 82
+    LBRACE          shift and go to state 45
+    ELSE            reduce using rule 83 (empty -> .)
+    SEMICOLON       reduce using rule 83 (empty -> .)
+    WHILE           reduce using rule 83 (empty -> .)
+
+    empty                          shift and go to state 80
+    block                          shift and go to state 84
+    statement                      shift and go to state 181
+
+state 173
+
+    (26) procedure -> PROCEDURE ID parameters LBRACE declarations_list block RBRACE SEMICOLON .
+
+    MAIN            reduce using rule 26 (procedure -> PROCEDURE ID parameters LBRACE declarations_list block RBRACE SEMICOLON .)
+    PROCEDURE       reduce using rule 26 (procedure -> PROCEDURE ID parameters LBRACE declarations_list block RBRACE SEMICOLON .)
+
+
+state 174
+
+    (38) statement -> ID LBRACK expressions RBRACK ASSIGNMENT_SIGN expressions .
+
+    ELSE            reduce using rule 38 (statement -> ID LBRACK expressions RBRACK ASSIGNMENT_SIGN expressions .)
+    SEMICOLON       reduce using rule 38 (statement -> ID LBRACK expressions RBRACK ASSIGNMENT_SIGN expressions .)
+    WHILE           reduce using rule 38 (statement -> ID LBRACK expressions RBRACK ASSIGNMENT_SIGN expressions .)
+
+
+state 175
+
+    (33) statement -> IF bool_expressions THEN statement ELSE statement .
+
+    ELSE            reduce using rule 33 (statement -> IF bool_expressions THEN statement ELSE statement .)
+    SEMICOLON       reduce using rule 33 (statement -> IF bool_expressions THEN statement ELSE statement .)
+    WHILE           reduce using rule 33 (statement -> IF bool_expressions THEN statement ELSE statement .)
+
+
+state 176
+
+    (51) case_element -> case_element CASE NUMCONST COLON . block
+    (28) block -> . LBRACE statement_list RBRACE
+
+    LBRACE          shift and go to state 45
+
+    block                          shift and go to state 182
+
+state 177
+
+    (52) default -> DEFAULT COLON block .
+
+    END             reduce using rule 52 (default -> DEFAULT COLON block .)
+
+
+state 178
+
+    (50) case_element -> CASE NUMCONST COLON block .
+
+    CASE            reduce using rule 50 (case_element -> CASE NUMCONST COLON block .)
+    DEFAULT         reduce using rule 50 (case_element -> CASE NUMCONST COLON block .)
+    END             reduce using rule 50 (case_element -> CASE NUMCONST COLON block .)
+
+
+state 179
+
+    (48) counter -> NUMCONST UPTO NUMCONST .
+
+    DO              reduce using rule 48 (counter -> NUMCONST UPTO NUMCONST .)
+
+
+state 180
+
+    (49) counter -> NUMCONST DOWNTO NUMCONST .
+
+    DO              reduce using rule 49 (counter -> NUMCONST DOWNTO NUMCONST .)
+
+
+state 181
+
+    (35) statement -> FOR ID ASSIGNMENT_SIGN counter DO statement .
+
+    ELSE            reduce using rule 35 (statement -> FOR ID ASSIGNMENT_SIGN counter DO statement .)
+    SEMICOLON       reduce using rule 35 (statement -> FOR ID ASSIGNMENT_SIGN counter DO statement .)
+    WHILE           reduce using rule 35 (statement -> FOR ID ASSIGNMENT_SIGN counter DO statement .)
+
+
+state 182
+
+    (51) case_element -> case_element CASE NUMCONST COLON block .
+
+    CASE            reduce using rule 51 (case_element -> case_element CASE NUMCONST COLON block .)
+    DEFAULT         reduce using rule 51 (case_element -> case_element CASE NUMCONST COLON block .)
+    END             reduce using rule 51 (case_element -> case_element CASE NUMCONST COLON block .)
+
+WARNING: 
+WARNING: Conflicts:
+WARNING: 
+WARNING: shift/reduce conflict for INT in state 3 resolved as shift
+WARNING: shift/reduce conflict for REAL in state 3 resolved as shift
+WARNING: shift/reduce conflict for CHAR in state 3 resolved as shift
+WARNING: shift/reduce conflict for BOOLEAN in state 3 resolved as shift
+WARNING: shift/reduce conflict for INT in state 11 resolved as shift
+WARNING: shift/reduce conflict for REAL in state 11 resolved as shift
+WARNING: shift/reduce conflict for CHAR in state 11 resolved as shift
+WARNING: shift/reduce conflict for BOOLEAN in state 11 resolved as shift
+WARNING: shift/reduce conflict for INT in state 75 resolved as shift
+WARNING: shift/reduce conflict for REAL in state 75 resolved as shift
+WARNING: shift/reduce conflict for CHAR in state 75 resolved as shift
+WARNING: shift/reduce conflict for BOOLEAN in state 75 resolved as shift
+WARNING: shift/reduce conflict for INT in state 108 resolved as shift
+WARNING: shift/reduce conflict for REAL in state 108 resolved as shift
+WARNING: shift/reduce conflict for CHAR in state 108 resolved as shift
+WARNING: shift/reduce conflict for BOOLEAN in state 108 resolved as shift
+WARNING: shift/reduce conflict for RPAR in state 109 resolved as shift
+WARNING: shift/reduce conflict for INT in state 109 resolved as shift
+WARNING: shift/reduce conflict for REAL in state 109 resolved as shift
+WARNING: shift/reduce conflict for CHAR in state 109 resolved as shift
+WARNING: shift/reduce conflict for BOOLEAN in state 109 resolved as shift
+WARNING: shift/reduce conflict for LBRACE in state 133 resolved as shift
+WARNING: shift/reduce conflict for INT in state 133 resolved as shift
+WARNING: shift/reduce conflict for REAL in state 133 resolved as shift
+WARNING: shift/reduce conflict for CHAR in state 133 resolved as shift
+WARNING: shift/reduce conflict for BOOLEAN in state 133 resolved as shift
+WARNING: shift/reduce conflict for ELSE in state 152 resolved as shift
+WARNING: reduce/reduce conflict in state 18 resolved using rule (declarations -> empty)
+WARNING: rejected rule (procedure_list -> empty) in state 18
+WARNING: reduce/reduce conflict in state 128 resolved using rule (arguments_list -> expressions)
+WARNING: rejected rule (multi_arguments -> expressions) in state 128
+WARNING: Rule (procedure_list -> empty) is never reduced
