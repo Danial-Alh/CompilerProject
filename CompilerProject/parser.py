@@ -1,11 +1,18 @@
 import ply.yacc as yacc
-from lexer import tokens
+from lexer import lexer
 
 start = 'program'
 
+precedence = (
+    ('right', 'ELSE', 'THEN'),
+)
+
 
 def p_program(p):
-    """program    : PROGRAM ID declarations_list procedure_list MAIN block"""
+    """program      : PROGRAM ID declarations_list procedure_list MAIN block
+                    | PROGRAM ID procedure_list MAIN block
+                    | PROGRAM ID declarations_list MAIN block
+                    | PROGRAM ID MAIN block"""
     pass
 
 
@@ -16,8 +23,7 @@ def p_declarations_list(p):
 
 
 def p_declarations(p):
-    """declarations     : type_specifiers declarator_list SEMICOLON
-                        | empty"""
+    """declarations     : type_specifiers declarator_list SEMICOLON"""
     pass
 
 
@@ -68,17 +74,19 @@ def p_initializer_list(p):
 
 
 def p_procedure_list(p):
-    """procedure_list       : procedure_list procedure
-                            | empty"""
+    """procedure_list       : procedure_list procedure_nt
+                            | procedure_nt"""
 
 
 def p_procedure(p):
-    """procedure        : PROCEDURE ID parameters LBRACE declarations_list block RBRACE SEMICOLON"""
+    """procedure_nt         : PROCEDURE ID parameters LBRACE declarations_list block RBRACE SEMICOLON
+                            | PROCEDURE ID parameters LBRACE block RBRACE SEMICOLON"""
     pass
 
 
 def p_parameters(p):
-    """parameters       : LPAR declarations_list RPAR"""
+    """parameters       : LPAR declarations_list RPAR
+                        | LPAR RPAR"""
     pass
 
 
@@ -105,14 +113,13 @@ def p_statement(p):
                             | RETURN expressions
                             | EXIT WHEN bool_expressions
                             | block
-                            | empty"""
+                            | """
     pass
 
 
 def p_arguments_list(p):
-    """arguments_list       : multi_arguments 
-                            | expressions 
-                            | empty"""
+    """arguments_list       : multi_arguments
+                            | """
     pass
 
 
@@ -136,7 +143,7 @@ def p_case_element(p):
 
 def p_default(p):
     """default      : DEFAULT COLON block 
-                    | empty"""
+                    | """
     pass
 
 
@@ -189,20 +196,20 @@ def p_pair(p):
     pass
 
 
-def p_empty(p):
-    """empty :"""
-    pass
+# def p_empty(p):
+#     """empty :"""
+#     pass
 
 
 def p_error(p):
     print("Syntax error in input!")
-
+    print(p.lineno)
 
 # Build the parser
 parser = yacc.yacc(tabmodule="parsing_table")
 
-# code = None
-# with open('./input.dm', 'r') as input_file:
-#     code = input_file.read()
-# result = parser.parse(code, lexer=(lexer.lexer), debug=True)
-# print(result)
+code = None
+with open('./input.dm', 'r') as input_file:
+    code = input_file.read()
+result = parser.parse(code, lexer=lexer, debug=True, tracking=True)
+print(result)

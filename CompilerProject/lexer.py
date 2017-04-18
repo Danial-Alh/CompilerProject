@@ -47,7 +47,7 @@ reserved = {
 # List of token names.   This is always required
 tokens = [
              'ID', 'NUMCONST', 'REALCONST', 'BOOLCONST',
-             'CHARCONST', 'WHITE_SPACE', 'COMMENTS', 'NEWLINE',
+             'CHARCONST',
              'LT', 'LE', 'GT', 'GE', 'EQ', 'NEQ', 'LPAR', 'RPAR', 'LBRACK', 'RBRACK', 'LBRACE', 'RBRACE',
              'PLUS', 'MINUS', 'MULT', 'DIV', 'MOD', 'ASSIGNMENT_SIGN',
              'SEMICOLON', 'DOUBLE_DOT', 'COMMA', 'COLON'
@@ -63,7 +63,7 @@ quoted_charconst = r'(\'(.)\')'
 charconst = r'(' + backslash_charconst + '|' + quoted_charconst + r')'
 numconst = r'(\#' + non_zero_digit + digit + r'*|' + zero + r')'
 realconst = r'(\#(' + non_zero_digit + digit + r'*|' + zero + r')\.(' + \
-            digit + r'*' + non_zero_digit + r'|' + zero +'))'
+            digit + r'*' + non_zero_digit + r'|' + zero + '))'
 boolconst = r'((true)|(false))'
 
 t_ignore = ' \t'
@@ -82,7 +82,7 @@ t_RBRACE = r'\}'
 t_PLUS = r'\+'
 t_MINUS = r'-'
 t_MULT = r'\*'
-t_DIV = r'\\'
+t_DIV = r'\/'
 t_MOD = r'%'
 t_ASSIGNMENT_SIGN = r'\:='
 t_SEMICOLON = r';'
@@ -94,7 +94,7 @@ t_COMMA = r'\,'
 def t_NEWLINE(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
-    return t
+    return
 
 
 @TOKEN(realconst)
@@ -149,15 +149,15 @@ def t_error(t):
 lexer = lex.lex()
 
 # read input file
-code = None
-with open('./input.dm', 'r') as input_file:
-    code = input_file.read()
-# Give the lexer some input
-lexer.input(code)
-
-# Tokenize
-while True:
-    tok = lexer.token()
-    if not tok:
-        break  # No more input
-    print(tok)
+# code = None
+# with open('./input.dm', 'r') as input_file:
+#     code = input_file.read()
+# # Give the lexer some input
+# lexer.input(code)
+#
+# # Tokenize
+# while True:
+#     tok = lexer.token()
+#     if not tok:
+#         break  # No more input
+#     print(tok)
