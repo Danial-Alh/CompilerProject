@@ -1,10 +1,11 @@
 import ply.yacc as yacc
+from lexer import tokens
 from lexer import lexer
 
 start = 'program'
 
 precedence = (
-    ('right', 'ELSE', 'THEN'),
+    ('right', 'THEN', 'ELSE'),
 )
 
 
