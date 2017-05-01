@@ -1,15 +1,15 @@
 program firstProgram 
-int a, b:=#2, c:=#15, d[#1 .. #3]:={#4,#3,#2}, e[-(b,*(#2,#1)) .. +(b,/(#3,c))], f[#10];
+int a, b:=#2, c:=#15, d[#1 .. #3]:={#4,#3,#2}, e[*(#2,#1) .. /(#3,\i)], f[#10];
 int x:=#10;
 real g:=#1.003, h, i:=#20.03;
 char j:='c', k:=\e;
 boolean w:=true;
-boolean b := true;
+boolean hh := true;
 int array[#2] := {#1, #7};
 char chars[i..k] := {'c', 'd', '7'};
 procedure func (int n;)
 {
-	int x:=#1;
+	int xp:=#1;
 	int y:=#2;
 	boolean test:=true;
 	{
@@ -35,10 +35,10 @@ procedure func (int n;)
 };
 procedure func (int input; boolean which;) {
         int mid := #2;
-         int c := \3;
+         int cc := \3;
          {
             if and then(which, true) then
-            if >(aaa,#0) then
+            if >(a,#0) then
             else return -(c, mid);
          }
     };

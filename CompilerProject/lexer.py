@@ -5,15 +5,10 @@
 # numbers and +,-,*,/
 # ------------------------------------------------------------
 import ply.lex as lex
+from assets import SymbolTable
 from ply.lex import TOKEN
 
-symbol_table = []
-
-
-def install_id(t):
-    symbol_table.append(t.value)
-    return len(symbol_table) - 1
-
+symbol_table = SymbolTable()
 
 # List of reserved words
 reserved = {
@@ -99,30 +94,30 @@ def t_NEWLINE(t):
 
 @TOKEN(realconst)
 def t_REALCONST(t):
-    t.value = {"value": t.value, "real_value": float(t.value[1:])}
+    t.value = {"value": float(t.value[1:]), "type": "real"}
     return t
 
 
 @TOKEN(numconst)
 def t_NUMCONST(t):
-    t.value = {"value": t.value, "int_value": int(t.value[1:])}
+    t.value = {"value": int(t.value[1:]), "type": "int"}
     return t
 
 
 @TOKEN(charconst)
 def t_CHARCONST(t):
     if t.value == "\\0":
-        t.value = {"value": t.value, "character": None}
+        t.value = {"value": None, "type": "character"}
     elif t.value[0] == '\'':
-        t.value = {"value": t.value, "character": t.value[1:len(t.value) - 1]}
+        t.value = {"value": t.value[1:len(t.value) - 1], "type": "character"}
     else:
-        t.value = {"value": t.value, "character": t.value[1:]}
+        t.value = {"value": t.value[1:], "type": "character"}
     return t
 
 
 @TOKEN(boolconst)
 def t_BOOLCONST(t):
-    t.value = {"value": t.value, "bool_val": t.value}
+    t.value = {"value": t.value, "type": "boolean"}
     return t
 
 
@@ -134,12 +129,17 @@ def t_COMMENTS(t):
 @TOKEN(identifier)
 def t_ID(t):
     t.type = reserved.get(t.value, 'ID')  # Check for reserved words
-    if t.type == 'ID':
-        if t.value not in symbol_table:
-            index = install_id(t)
-        else:
+    if t.type == "ID":
+        t.value = {"place": t.value}
+        if t.value["place"] in symbol_table:
             index = symbol_table.index(t.value)
-        t.value = {"value": t.value, "index": index}
+            t.value["declared"] = True
+            t.value["index"] = index
+        else:
+            t.value["declared"] = False
+            t.value["index"] = None
+        t.value["is_array"] = None
+        t.value["type"] = None
     return t
 
 
@@ -148,9 +148,15 @@ def t_error(t):
     t.lexer.skip(1)
 
 
+def symbol_table_has_element(place):
+    for symbol in symbol_table:
+        if symbol["variable_info"]["place"] == place:
+            return True
+    return False
+
+
 # Build the lexer
 lexer = lex.lex()
-
 # # read input file
 # code = None
 # with open('./input.dm', 'r') as input_file:
