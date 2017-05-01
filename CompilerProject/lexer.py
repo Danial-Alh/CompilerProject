@@ -99,11 +99,13 @@ def t_NEWLINE(t):
 
 @TOKEN(realconst)
 def t_REALCONST(t):
+    t.value = {"value": t.value, "real_value": float(t.value[1:])}
     return t
 
 
 @TOKEN(numconst)
 def t_NUMCONST(t):
+    t.value = {"value": t.value, "int_value": int(t.value[1:])}
     return t
 
 
@@ -120,6 +122,7 @@ def t_CHARCONST(t):
 
 @TOKEN(boolconst)
 def t_BOOLCONST(t):
+    t.value = {"value": t.value, "bool_val": t.value}
     return t
 
 

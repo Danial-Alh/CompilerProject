@@ -27,34 +27,38 @@ def p_declarations_list(p):
 
 def p_declarations(p):
     """declarations     : type_specifiers declarator_list SEMICOLON"""
-    print(p[1]["type"])
-
+    pass
 
 def p_type_specifiers(p):
     """type_specifiers      : INT
                             | REAL
                             | CHAR
                             | BOOLEAN"""
-    # print(p[0])
-    p[0] = {"type": p.slice[1].type}
-
+    pass
 
 def p_declarator_list(p):
     """declarator_list      : declarator
                             | declarator_list COMMA declarator"""
-    pass
+    if p.slice[1].type == "declarator":
+        print(p[1])
 
 
 def p_declarator(p):
     """declarator       : dec
                         | dec ASSIGNMENT_SIGN initializer"""
+    p[0] = {"varibale_info": p[1]}
+    p[0]["initializer"] = None
+    if len(p) > 2:
+        p[0]["initializer"] = p[3]
     pass
+
 
 
 def p_dec(p):
     """dec      : ID
                 | ID LBRACK range RBRACK
                 | ID LBRACK NUMCONST RBRACK"""
+    p[0] = p[1]
     pass
 
 
@@ -68,6 +72,12 @@ def p_range(p):
 def p_initializer(p):
     """initializer      : constant_expressions
                         | LBRACE initializer_list RBRACE"""
+    p[0] = {}
+    if p[1] == "LBRACE":
+        p[0]["initializer_type"] = "array_initializer"
+    else:
+        p[0]["initializer_type"] = "single_initializer"
+        p[0]["constant_value"] = p[1]
     pass
 
 
@@ -167,6 +177,7 @@ def p_constant_expressions(p):
                                 | REALCONST 
                                 | CHARCONST 
                                 | BOOLCONST"""
+    p[0] = p[1]
     pass
 
 
@@ -217,4 +228,3 @@ code = None
 with open('./input.dm', 'r') as input_file:
     code = input_file.read()
 result = parser.parse(code, lexer=lexer, debug=False, tracking=True)
-print(result)
