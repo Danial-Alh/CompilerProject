@@ -5,10 +5,8 @@
 # numbers and +,-,*,/
 # ------------------------------------------------------------
 import ply.lex as lex
-from assets import SymbolTable
+from assets import symbol_table
 from ply.lex import TOKEN
-
-symbol_table = SymbolTable()
 
 # List of reserved words
 reserved = {
@@ -146,13 +144,6 @@ def t_ID(t):
 def t_error(t):
     print("Illegal character " + str(t.value[0]) + " line num: " + str(t.lineno))
     t.lexer.skip(1)
-
-
-def symbol_table_has_element(place):
-    for symbol in symbol_table:
-        if symbol["variable_info"]["place"] == place:
-            return True
-    return False
 
 
 # Build the lexer

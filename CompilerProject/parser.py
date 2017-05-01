@@ -1,13 +1,6 @@
 import ply.yacc as yacc
-from lexer import lexer, tokens, symbol_table
-
-code = []
-
-
-def install_id(identifier):
-    symbol_table.append(identifier)
-    return len(symbol_table) - 1
-
+from lexer import lexer, tokens
+from assets import symbol_table, install_id, code_array
 
 start = 'program'
 
@@ -203,7 +196,10 @@ def p_expressions(p):
         if not p[1]["declared"]:
             msg = "variable \'" + p[1]["place"] + "\' not declared!!"
             print_error(msg, p.slice[1])
+    elif p.slice[1].type == "LPAR":
+        p[0] = p[2]
     else:
+        p[0] = p[1]
         return
     return
 
@@ -232,18 +228,29 @@ def p_bool_expressions(p):
     return
 
 
-def p_arithmetic_expressions(p):
+def p_arithmetic_expressions1(p):
     """arithmetic_expressions       : PLUS pair 
                                     | MINUS pair 
                                     | MULT pair 
                                     | DIV pair 
-                                    | MOD pair 
+                                    | MOD pair
                                     | MINUS expressions"""
+    p[0] = get_new_expression_dictionary()
+    p[0]["place"] = symbol_table.get_new_temp_variable()
+    new_code_entry = code_array.get_new_entry()
+    new_code_entry["opt"] = p.slice[1].type
+    if new_code_entry["opt"] == "MINUS":
+        new_code_entry["first_arg"] = p[2]
+    else:
+        new_code_entry["first_arg"] = p[2]["first_arg"]
+        new_code_entry["second_arg"] = p[2]["second_arg"]
+    code_array.append(new_code_entry)
     return
 
 
 def p_pair(p):
     """pair     : LPAR expressions COMMA expressions RPAR"""
+    p[0] = {"first_arg": p[2], "second_arg": p[4]}
     return
 
 
@@ -264,9 +271,15 @@ def print_error(msg, p):
     return
 
 
+def get_new_expression_dictionary():
+    return {"place": None, "index": None, "is_array": None, "type": None}
+
+
 # Build the parser
 parser = yacc.yacc(tabmodule="parsing_table")
 code = None
 with open('./input.dm', 'r') as input_file:
     code = input_file.read()
 result = parser.parse(code, lexer=lexer, debug=False, tracking=True)
+for entry in code_array:
+    print(entry)
