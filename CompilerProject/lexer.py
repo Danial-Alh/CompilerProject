@@ -60,10 +60,10 @@ digit = r'([0-9])'
 identifier = r'(' + letter + r'+)'
 backslash_charconst = r'(\\(.))'
 quoted_charconst = r'(\'(.)\')'
-charconst = r'(' + backslash_charconst + '|' + quoted_charconst + r')'
-numconst = r'(\#' + non_zero_digit + digit + r'*|' + zero + r')'
+charconst = r'(' + backslash_charconst + r'|' + quoted_charconst + r')'
+numconst = r'(\#(' + non_zero_digit + digit + r'*|' + zero + r'))'
 realconst = r'(\#(' + non_zero_digit + digit + r'*|' + zero + r')\.(' + \
-            digit + r'*' + non_zero_digit + r'|' + zero + '))'
+            digit + r'*' + non_zero_digit + r'|' + zero + r'))'
 boolconst = r'((true)|(false))'
 
 t_ignore = ' \t'
@@ -141,14 +141,14 @@ def t_ID(t):
 
 
 def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
+    print("Illegal character " + str(t.value[0]) + " line num: " + str(t.lineno))
     t.lexer.skip(1)
 
 
 # Build the lexer
 lexer = lex.lex()
 
-# read input file
+# # read input file
 # code = None
 # with open('./input.dm', 'r') as input_file:
 #     code = input_file.read()

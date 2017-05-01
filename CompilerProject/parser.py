@@ -2,6 +2,8 @@ import ply.yacc as yacc
 from lexer import tokens
 from lexer import lexer
 
+code = []
+
 start = 'program'
 
 precedence = (
@@ -25,7 +27,7 @@ def p_declarations_list(p):
 
 def p_declarations(p):
     """declarations     : type_specifiers declarator_list SEMICOLON"""
-    pass
+    print(p[1]["type"])
 
 
 def p_type_specifiers(p):
@@ -33,7 +35,8 @@ def p_type_specifiers(p):
                             | REAL
                             | CHAR
                             | BOOLEAN"""
-    pass
+    # print(p[0])
+    p[0] = {"type": p.slice[1].type}
 
 
 def p_declarator_list(p):
@@ -206,11 +209,12 @@ def p_error(p):
     print("Syntax error in input!")
     print(p.lineno)
 
+
 # Build the parser
 parser = yacc.yacc(tabmodule="parsing_table")
 
 code = None
 with open('./input.dm', 'r') as input_file:
     code = input_file.read()
-result = parser.parse(code, lexer=lexer, debug=True, tracking=True)
+result = parser.parse(code, lexer=lexer, debug=False, tracking=True)
 print(result)
