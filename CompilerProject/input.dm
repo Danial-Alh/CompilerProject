@@ -33,7 +33,7 @@ procedure func (int n;)
 		return j;
 	}
 };
-procedure func (int input; boolean which;) {
+procedure func (int inputt; boolean which;) {
         int mid := #2;
          int cc := \3;
          {

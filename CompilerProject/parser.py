@@ -1,6 +1,6 @@
 import ply.yacc as yacc
 from lexer import lexer, tokens
-from assets import symbol_table, install_id, code_array
+from assets import symbol_table, code_array
 
 start = 'program'
 
@@ -25,16 +25,15 @@ def p_declarations_list(p):
 
 def p_declarations(p):
     """declarations     : type_specifiers declarator_list SEMICOLON"""
-    # print("**************************************************************")
     for declarator in p[2]["declarations_info"]:
-        declarator["type"] = p[1]["type"]
+        declarator["variable_info"]["type"] = p[1]["type"]
         place = declarator["variable_info"]["place"]
         if place not in symbol_table:
-            index = install_id(declarator)
+            index = symbol_table.install_id(declarator)
+            declarator["variable_info"]["declared"] = True
+            declarator["variable_info"]["index"] = index
         else:
             print_error("multiple variable \'" + place + "\' declaration!!", p.slice[1])
-        declarator["variable_info"]["index"] = index
-        # print(declarator)
     return
 
 
@@ -60,7 +59,7 @@ def p_declarator_list(p):
 def p_declarator(p):
     """declarator       : dec
                         | dec ASSIGNMENT_SIGN initializer"""
-    p[0] = {"variable_info": p[1]}
+    p[0] = p[1]
     p[0]["initializer"] = None
     if len(p) > 2:
         p[0]["initializer"] = p[3]
@@ -73,9 +72,9 @@ def p_dec(p):
                 | ID LBRACK NUMCONST RBRACK"""
     p[0] = p[1]
     if len(p) == 2:
-        p[0]["is_array"] = False
+        p[0]["variable_info"]["is_array"] = False
     else:
-        p[0]["is_array"] = True
+        p[0]["variable_info"]["is_array"] = True
     return
 
 
@@ -191,16 +190,19 @@ def p_expressions(p):
                         | ID LBRACK expressions RBRACK 
                         | ID LPAR arguments_list RPAR 
                         | LPAR expressions RPAR"""
-    p[0] = {}
     if p.slice[1].type == "ID":
-        if not p[1]["declared"]:
-            msg = "variable \'" + p[1]["place"] + "\' not declared!!"
+        if not p[1]["variable_info"]["declared"]:
+            msg = "variable \'" + p[1]["variable_info"]["place"] + "\' not declared!!"
             print_error(msg, p.slice[1])
+        p[0] = p[1]
+    elif p.slice[1].type == "constant_expressions":
+        p[0] = symbol_table.get_new_temp_variable()
+        new_code_entry = code_array.get_new_entry("ASSIGNMENT_SIGN", p[0], p[1], None)
+        code_array.append(new_code_entry)
     elif p.slice[1].type == "LPAR":
         p[0] = p[2]
     else:
         p[0] = p[1]
-        return
     return
 
 
@@ -235,15 +237,14 @@ def p_arithmetic_expressions1(p):
                                     | DIV pair 
                                     | MOD pair
                                     | MINUS expressions"""
-    p[0] = get_new_expression_dictionary()
-    p[0]["place"] = symbol_table.get_new_temp_variable()
-    new_code_entry = code_array.get_new_entry()
-    new_code_entry["opt"] = p.slice[1].type
-    if new_code_entry["opt"] == "MINUS":
-        new_code_entry["first_arg"] = p[2]
+    p[0] = symbol_table.get_new_temp_variable()
+    if p.slice[2].type == "expressions":
+        first_arg = p[2]
+        second_arg = None
     else:
-        new_code_entry["first_arg"] = p[2]["first_arg"]
-        new_code_entry["second_arg"] = p[2]["second_arg"]
+        first_arg = p[2]["first_arg"]
+        second_arg = p[2]["second_arg"]
+    new_code_entry = code_array.get_new_entry(p.slice[1].type, first_arg, second_arg, None)
     code_array.append(new_code_entry)
     return
 
@@ -267,12 +268,8 @@ def p_error(p):
 
 def print_error(msg, p):
     print(msg + "\tline: " + str(p.lineno))
-    raise SyntaxError
+    # raise SyntaxError
     return
-
-
-def get_new_expression_dictionary():
-    return {"place": None, "index": None, "is_array": None, "type": None}
 
 
 # Build the parser
@@ -282,4 +279,14 @@ with open('./input.dm', 'r') as input_file:
     code = input_file.read()
 result = parser.parse(code, lexer=lexer, debug=False, tracking=True)
 for entry in code_array:
-    print(entry)
+    if "variable_info" in entry["first_arg"]:
+        arg1 = entry["first_arg"]["variable_info"]["place"]
+    else:
+        arg1 = entry["first_arg"]["value"]
+    if entry["second_arg"] is None:
+        arg2 = None
+    elif "variable_info" in entry["second_arg"]:
+        arg2 = entry["second_arg"]["variable_info"]["place"]
+    else:
+        arg2 = entry["second_arg"]["value"]
+    print(str(arg1) + " " + entry["opt"] + " " + str(arg2))

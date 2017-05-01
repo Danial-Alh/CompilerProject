@@ -92,30 +92,30 @@ def t_NEWLINE(t):
 
 @TOKEN(realconst)
 def t_REALCONST(t):
-    t.value = {"value": float(t.value[1:]), "type": "real"}
+    t.value = {"value": float(t.value[1:]), "type": "const_real"}
     return t
 
 
 @TOKEN(numconst)
 def t_NUMCONST(t):
-    t.value = {"value": int(t.value[1:]), "type": "int"}
+    t.value = {"value": int(t.value[1:]), "type": "const_int"}
     return t
 
 
 @TOKEN(charconst)
 def t_CHARCONST(t):
     if t.value == "\\0":
-        t.value = {"value": None, "type": "character"}
+        t.value = {"value": None, "type": "const_character"}
     elif t.value[0] == '\'':
-        t.value = {"value": t.value[1:len(t.value) - 1], "type": "character"}
+        t.value = {"value": t.value[1:len(t.value) - 1], "type": "const_character"}
     else:
-        t.value = {"value": t.value[1:], "type": "character"}
+        t.value = {"value": t.value[1:], "type": "const_character"}
     return t
 
 
 @TOKEN(boolconst)
 def t_BOOLCONST(t):
-    t.value = {"value": t.value, "type": "boolean"}
+    t.value = {"value": t.value, "type": "const_boolean"}
     return t
 
 
@@ -128,16 +128,11 @@ def t_COMMENTS(t):
 def t_ID(t):
     t.type = reserved.get(t.value, 'ID')  # Check for reserved words
     if t.type == "ID":
-        t.value = {"place": t.value}
-        if t.value["place"] in symbol_table:
+        if t.value in symbol_table:
             index = symbol_table.index(t.value)
-            t.value["declared"] = True
-            t.value["index"] = index
+            t.value = symbol_table[index]
         else:
-            t.value["declared"] = False
-            t.value["index"] = None
-        t.value["is_array"] = None
-        t.value["type"] = None
+            t.value = symbol_table.get_new_variable_dictionary(t.value)
     return t
 
 
