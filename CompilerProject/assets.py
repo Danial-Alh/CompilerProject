@@ -13,17 +13,18 @@ class SymbolTable(list):
                 return i
         return -1
 
-    def get_new_temp_variable(self):
+    def get_new_temp_variable(self, type):
         place = "T" + str(self.temp_variable_counter)
         self.temp_variable_counter += 1
         index = self.install_id(self.get_new_variable_dictionary(place))
         self[index]["variable_info"]["declared"] = True
         self[index]["variable_info"]["index"] = index
+        self[index]["variable_info"]["type"] = type
         return self[index]
 
     def get_new_variable_dictionary(self, place):
         return {"variable_info": {"declared": False, "index": None,
-                                  "is_array": None, "type": None, "place": place}}
+                                  "is_array": False, "type": None, "place": place}, "initializer": None}
 
     def install_id(self, identifier):
         self.append(identifier)
@@ -57,7 +58,44 @@ class CodeArray(list):
     def merge_e_lists(self, e_list_1, e_list_2):
         return e_list_1 + e_list_2
 
+    def get_variable_string(self, variable):
+        if variable is None:
+            return None
+        result = ""
+        if "variable_info" in variable:
+            result = str(variable["variable_info"]["place"])
+            if variable["variable_info"]["is_array"]:
+                index_string = self.get_variable_string(variable["variable_info"]["array_index_variable"])
+                result += "[" + str(index_string) + "]"
+        else:
+            result = str(variable["value"])
+        return result
+
     def generate_code(self):
+        self.generate_variables()
+        self.generate_statements()
+        return
+
+    def generate_variables(self):
+        for entry in symbol_table:
+            declaration_code = entry["variable_info"]["type"] + " " + entry["variable_info"]["place"]
+            if entry["variable_info"]["is_array"]:
+                array_size_place = entry["variable_info"]["array_size"]["variable_info"]["place"]
+                declaration_code += "[" + array_size_place + "]"
+                if entry["initializer"] is not None:
+                    declaration_code += "{"
+                    for initial_value in entry["initializer"]["initial_value"]:
+                        declaration_code += str(initial_value["value"]) + ", "
+                    declaration_code = declaration_code[0:len(declaration_code) - 2]
+                    declaration_code += "}"
+            else:
+                if entry["initializer"] is not None:
+                    declaration_code += " = " + str(entry["initializer"]["initial_value"][0]["value"])
+            declaration_code += ";"
+            print(declaration_code)
+        return
+
+    def generate_statements(self):
         should_indent = False
         for i in range(0, len(self)):
             entry = self[i]
@@ -65,35 +103,18 @@ class CodeArray(list):
             opt = entry["opt"]
             ########################################################################################################
             if opt == '+' or opt == '-' or opt == '*' or opt == '/' or opt == '%':
-                if "variable_info" in entry["first_arg"]:
-                    arg1 = entry["first_arg"]["variable_info"]["place"]
-                else:
-                    arg1 = entry["first_arg"]["value"]
-                if "second_arg" in entry:
-                    arg2 = None
-                elif "variable_info" in entry["second_arg"]:
-                    arg2 = entry["second_arg"]["variable_info"]["place"]
-                else:
-                    arg2 = entry["second_arg"]["value"]
+                arg1 = self.get_variable_string(entry["first_arg"])
+                arg2 = self.get_variable_string(entry["second_arg"])
                 entry_code += entry["result"]["variable_info"]["place"] + " = " + str(arg1) + " " + opt + " " + str(
                     arg2) + ";"
             ########################################################################################################
             elif opt == '=':
-                if "variable_info" in entry["first_arg"]:
-                    arg1 = entry["first_arg"]["variable_info"]["place"]
-                else:
-                    arg1 = entry["first_arg"]["value"]
+                arg1 = self.get_variable_string(entry["first_arg"])
                 entry_code += entry["result"]["variable_info"]["place"] + " = " + str(arg1) + ";"
             ########################################################################################################
             elif opt == '<' or opt == '<=' or opt == '>' or opt == '>=' or opt == '==' or opt == '!=':
-                if "variable_info" in entry["first_arg"]:
-                    arg1 = entry["first_arg"]["variable_info"]["place"]
-                else:
-                    arg1 = entry["first_arg"]["value"]
-                if "variable_info" in entry["second_arg"]:
-                    arg2 = entry["second_arg"]["variable_info"]["place"]
-                else:
-                    arg2 = entry["second_arg"]["value"]
+                arg1 = self.get_variable_string(entry["first_arg"])
+                arg2 = self.get_variable_string(entry["second_arg"])
                 entry_code += "if (" + str(arg1) + " " + opt + " " + str(arg2) + ")"
                 should_indent = True
             ########################################################################################################
@@ -104,16 +125,14 @@ class CodeArray(list):
                 should_indent = False
             ########################################################################################################
             elif opt == 'if':
-                if "variable_info" in entry["first_arg"]:
-                    arg1 = entry["first_arg"]["variable_info"]["place"]
-                else:
-                    arg1 = entry["first_arg"]["value"]
+                arg1 = self.get_variable_string(entry["first_arg"])
                 entry_code += "if (" + str(arg1) + ")"
                 should_indent = True
             ########################################################################################################
             else:
                 entry_code += str(entry)
             print(str(i) + ":\t" + entry_code)
+        return
 
 
 symbol_table = SymbolTable()

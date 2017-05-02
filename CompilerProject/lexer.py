@@ -7,6 +7,7 @@
 import ply.lex as lex
 from assets import symbol_table
 from ply.lex import TOKEN
+import copy
 
 # List of reserved words
 reserved = {
@@ -91,30 +92,30 @@ def t_NEWLINE(t):
 
 @TOKEN(realconst)
 def t_REALCONST(t):
-    t.value = {"value": float(t.value[1:]), "type": "const_real"}
+    t.value = {"value": float(t.value[1:]), "type": "real"}
     return t
 
 
 @TOKEN(numconst)
 def t_NUMCONST(t):
-    t.value = {"value": int(t.value[1:]), "type": "const_int"}
+    t.value = {"value": int(t.value[1:]), "type": "int"}
     return t
 
 
 @TOKEN(charconst)
 def t_CHARCONST(t):
     if t.value == "\\0":
-        t.value = {"value": "NULL", "type": "const_character"}
+        t.value = {"value": "NULL", "type": "character"}
     elif t.value[0] == '\'':
-        t.value = {"value": "\'" + t.value[1:len(t.value) - 1] + "\'", "type": "const_character"}
+        t.value = {"value": "\'" + t.value[1:len(t.value) - 1] + "\'", "type": "character"}
     else:
-        t.value = {"value": "\'" + t.value[1:] + "\'", "type": "const_character"}
+        t.value = {"value": "\'" + t.value[1:] + "\'", "type": "character"}
     return t
 
 
 @TOKEN(boolconst)
 def t_BOOLCONST(t):
-    t.value = {"value": t.value, "type": "const_boolean"}
+    t.value = {"value": t.value, "type": "boolean"}
     return t
 
 
@@ -129,7 +130,7 @@ def t_ID(t):
     if t.type == "ID":
         if t.value in symbol_table:
             index = symbol_table.index(t.value)
-            t.value = symbol_table[index]
+            t.value = copy.deepcopy(symbol_table[index])
         else:
             t.value = symbol_table.get_new_variable_dictionary(t.value)
     return t

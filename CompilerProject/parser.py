@@ -1,3 +1,5 @@
+import re
+
 import ply.yacc as yacc
 from lexer import lexer, tokens
 from assets import symbol_table, code_array
@@ -75,6 +77,19 @@ def p_dec(p):
         p[0]["variable_info"]["is_array"] = False
     else:
         p[0]["variable_info"]["is_array"] = True
+        if p.slice[3].type == "range":
+            p[0]["variable_info"]["range"] = p[3]
+        if p.slice[3].type == "NUMCONST":
+            from_variable = symbol_table.get_new_temp_variable("int")
+            code_array.append(code_array.get_new_entry("=", from_variable, {"value": 0, "type": "int"}, None, None))
+            to_variable = symbol_table.get_new_temp_variable(p[3]["type"])
+            code_array.append(code_array.get_new_entry("=", to_variable, p[3], None, None))
+            p[0]["variable_info"]["range"] = {"from": from_variable, "to": to_variable}
+        array_size_variable = symbol_table.get_new_temp_variable("int")
+        code_array.append(code_array.get_new_entry("-", array_size_variable,
+                                                   p[0]["variable_info"]["range"]["from"],
+                                                   p[0]["variable_info"]["range"]["to"], None))
+        p[0]["variable_info"]["array_size"] = array_size_variable
     return
 
 
@@ -82,6 +97,15 @@ def p_range(p):
     """range        : ID DOUBLE_DOT ID
                     | NUMCONST DOUBLE_DOT NUMCONST
                     | arithmetic_expressions DOUBLE_DOT arithmetic_expressions"""
+    if p.slice[0].type == "NUMCONST":
+        from_variable = symbol_table.get_new_temp_variable(p[1]["type"])
+        code_array.append(code_array.get_new_entry("=", from_variable, p[1], None, None))
+        to_variable = symbol_table.get_new_temp_variable(p[3]["type"])
+        code_array.append(code_array.get_new_entry("=", to_variable, p[3], None, None))
+    else:
+        from_variable = p[1]
+        to_variable = p[3]
+    p[0] = {"from": from_variable, "to": to_variable}
     return
 
 
@@ -194,12 +218,12 @@ def p_expressions(p):
         if not p[1]["variable_info"]["declared"]:
             msg = "variable \'" + p[1]["variable_info"]["place"] + "\' not declared!!"
             print_error(msg, p.slice[1])
-        p[1]["variable_info"]["array_index_variable"] = p[3]["variable_info"]
         p[0] = p[1]
+        if len(p) == 5 and p.slice[3].type == "expressions":
+            p[0]["variable_info"]["array_index_variable"] = p[3]
     elif p.slice[1].type == "constant_expressions":
-        p[0] = symbol_table.get_new_temp_variable()
-        new_code_entry = code_array.get_new_entry("=", p[0], p[1], None, None)
-        code_array.append(new_code_entry)
+        p[0] = symbol_table.get_new_temp_variable(p[1]["type"])
+        code_array.append(code_array.get_new_entry("=", p[0], p[1], None, None))
     elif p.slice[1].type == "LPAR":
         p[0] = p[2]
     else:
@@ -249,7 +273,7 @@ def p_bool_expressions_and(p):
         code_array.create_simple_if_check(first_arg)
     elif "t_list" not in second_arg:
         code_array.create_simple_if_check(second_arg)
-    temp_var = symbol_table.get_new_temp_variable()
+    temp_var = symbol_table.get_new_temp_variable("boolean")
     code_array.backpatch_e_list(first_arg["t_list"], code_array.get_next_quad_index())
     code_array.append(code_array.get_new_entry('=', temp_var, {"value": "true", "type": "boolean"}, None, None))
     code_array.append(code_array.get_new_entry('goto', None, second_arg["starting_quad_index"], None, None))
@@ -275,7 +299,7 @@ def p_bool_expressions_or(p):
         code_array.create_simple_if_check(first_arg)
     elif "t_list" not in second_arg:
         code_array.create_simple_if_check(second_arg)
-    temp_var = symbol_table.get_new_temp_variable()
+    temp_var = symbol_table.get_new_temp_variable("boolean")
     code_array.backpatch_e_list(first_arg["t_list"], code_array.get_next_quad_index())
     code_array.append(code_array.get_new_entry('=', temp_var, {"value": "true", "type": "boolean"}, None, None))
     code_array.append(code_array.get_new_entry('goto', None, second_arg["starting_quad_index"], None, None))
@@ -344,13 +368,22 @@ def p_arithmetic_expressions1(p):
                                     | DIV pair 
                                     | MOD pair
                                     | MINUS expressions"""
-    p[0] = symbol_table.get_new_temp_variable()
     if p.slice[2].type == "expressions":
         first_arg = p[2]
         second_arg = None
+        exp_type = p[1]["variable_info"]["type"]
     else:
         first_arg = p[2]["first_arg"]
         second_arg = p[2]["second_arg"]
+        pattern = r'(\*|\+|\-|\/)'
+        if re.match(pattern, p[1]):
+            exp_type = get_pair_type(p[2])
+        else:
+            if p[2]["variable_info"]["type"] != "real":
+                exp_type = "int"
+            else:
+                exp_type = "real"
+    p[0] = symbol_table.get_new_temp_variable(exp_type)
     new_code_entry = code_array.get_new_entry(p[1], p[0], first_arg, second_arg, None)
     code_array.append(new_code_entry)
     return
@@ -360,6 +393,41 @@ def p_pair(p):
     """pair     : LPAR expressions COMMA expressions RPAR"""
     p[0] = {"first_arg": p[2], "second_arg": p[4]}
     return
+
+
+def get_pair_type(pair):
+    first_arg_type = pair["first_arg"]["variable_info"]["type"]
+    second_arg_type = pair["second_arg"]["variable_info"]["type"]
+    if first_arg_type == "int":
+        if second_arg_type == "int":
+            pair_type = "int"
+        if second_arg_type == "character":
+            pair_type = "int"
+        if second_arg_type == "real":
+            pair_type = "real"
+        if second_arg_type == "boolean":
+            pair_type = "int"
+    if first_arg_type == "character":
+        if second_arg_type == "int":
+            pair_type = "int"
+        if second_arg_type == "character":
+            pair_type = "character"
+        if second_arg_type == "real":
+            pair_type = "real"
+        if second_arg_type == "boolean":
+            pair_type = "int"
+    if first_arg_type == "real":
+        pair_type = "real"
+    if first_arg_type == "boolean":
+        if second_arg_type == "int":
+            pair_type = "int"
+        if second_arg_type == "character":
+            pair_type = "int"
+        if second_arg_type == "real":
+            pair_type = "real"
+        if second_arg_type == "boolean":
+            pair_type = "boolean"
+    return pair_type
 
 
 def p_error(p):
