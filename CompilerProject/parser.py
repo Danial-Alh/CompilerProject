@@ -197,7 +197,7 @@ def p_expressions(p):
         p[0] = p[1]
     elif p.slice[1].type == "constant_expressions":
         p[0] = symbol_table.get_new_temp_variable()
-        new_code_entry = code_array.get_new_entry("ASSIGNMENT_SIGN", p[0], p[1], None)
+        new_code_entry = code_array.get_new_entry("=", p[0], p[1], None, None)
         code_array.append(new_code_entry)
     elif p.slice[1].type == "LPAR":
         p[0] = p[2]
@@ -215,18 +215,83 @@ def p_constant_expressions(p):
     return
 
 
-def p_bool_expressions(p):
+def p_bool_expressions_comparator(p):
     """bool_expressions     : LT pair 
                             | LE pair 
                             | GT pair 
                             | GE pair 
                             | EQ pair 
-                            | NEQ pair 
-                            | AND pair 
-                            | OR pair 
-                            | AND THEN pair 
-                            | OR ELSE pair 
-                            | NOT expressions"""
+                            | NEQ pair"""
+    p[0] = {"t_list": [code_array.get_next_quad_index() + 1],
+            "f_list": [code_array.get_next_quad_index() + 2]}
+    opt = p.slice[1].type
+    if opt == "EQ":
+        opt = "=="
+    elif opt == "NEQ":
+        opt = "!="
+    else:
+        opt = p[1]
+    code_array.append(code_array.get_new_entry(opt, None, p[2]["first_arg"], p[2]["second_arg"], None))
+    code_array.append(code_array.get_new_entry("goto", None, None, None, None))
+    code_array.append(code_array.get_new_entry("goto", None, None, None, None))
+    return
+
+
+def p_bool_expressions_and(p):
+    """bool_expressions     : AND pair"""
+    return
+
+
+def p_bool_expressions_or(p):
+    """bool_expressions     : OR pair"""
+
+    return
+
+
+def p_bool_expressions_and_then(p):
+    """bool_expressions     : AND THEN pair"""
+    first_arg = p[3]["first_arg"]
+    second_arg = p[3]["second_arg"]
+    if "t_list" not in first_arg and "t_list" not in second_arg:
+        code_array.create_simple_if_check(first_arg)
+        code_array.create_simple_if_check(second_arg)
+    elif "t_list" not in first_arg:
+        code_array.create_simple_if_check(first_arg)
+    elif "t_list" not in second_arg:
+        code_array.create_simple_if_check(second_arg)
+    code_array.backpatch_e_list(first_arg["t_list"], second_arg["starting_quad_index"])
+    p[0] = {"t_list": second_arg["t_list"],
+            "f_list": code_array.merge_e_lists(first_arg["f_list"], second_arg["f_list"]),
+            "starting_quad_index": first_arg["starting_quad_index"]}
+    return
+
+
+def p_bool_expressions_or_else(p):
+    """bool_expressions     : OR ELSE pair"""
+    first_arg = p[3]["first_arg"]
+    second_arg = p[3]["second_arg"]
+    if "t_list" not in first_arg and "t_list" not in second_arg:
+        code_array.create_simple_if_check(first_arg)
+        code_array.create_simple_if_check(second_arg)
+    elif "t_list" not in first_arg:
+        code_array.create_simple_if_check(first_arg)
+    elif "t_list" not in second_arg:
+        code_array.create_simple_if_check(second_arg)
+    code_array.backpatch_e_list(first_arg["f_list"], second_arg["starting_quad_index"])
+    p[0] = {"f_list": second_arg["f_list"],
+            "t_list": code_array.merge_e_lists(first_arg["t_list"], second_arg["t_list"]),
+            "starting_quad_index": first_arg["starting_quad_index"]}
+    return
+
+
+def p_bool_expressions_not(p):
+    """bool_expressions     : NOT expressions"""
+    arg = p[2]
+    if "t_list" not in arg:
+        code_array.create_simple_if_check(arg)
+    p[0] = {"t_list": arg["f_list"],
+            "f_list": arg["t_list"],
+            "starting_quad_index": arg["starting_quad_index"]}
     return
 
 
@@ -244,7 +309,7 @@ def p_arithmetic_expressions1(p):
     else:
         first_arg = p[2]["first_arg"]
         second_arg = p[2]["second_arg"]
-    new_code_entry = code_array.get_new_entry(p.slice[1].type, first_arg, second_arg, None)
+    new_code_entry = code_array.get_new_entry(p[1], p[0], first_arg, second_arg, None)
     code_array.append(new_code_entry)
     return
 
@@ -253,11 +318,6 @@ def p_pair(p):
     """pair     : LPAR expressions COMMA expressions RPAR"""
     p[0] = {"first_arg": p[2], "second_arg": p[4]}
     return
-
-
-# def p_empty(p):
-#     """empty :"""
-#     return
 
 
 def p_error(p):
@@ -275,18 +335,7 @@ def print_error(msg, p):
 # Build the parser
 parser = yacc.yacc(tabmodule="parsing_table")
 code = None
-with open('./input.dm', 'r') as input_file:
+with open('./input_boolean.dm', 'r') as input_file:
     code = input_file.read()
 result = parser.parse(code, lexer=lexer, debug=False, tracking=True)
-for entry in code_array:
-    if "variable_info" in entry["first_arg"]:
-        arg1 = entry["first_arg"]["variable_info"]["place"]
-    else:
-        arg1 = entry["first_arg"]["value"]
-    if entry["second_arg"] is None:
-        arg2 = None
-    elif "variable_info" in entry["second_arg"]:
-        arg2 = entry["second_arg"]["variable_info"]["place"]
-    else:
-        arg2 = entry["second_arg"]["value"]
-    print(str(arg1) + " " + entry["opt"] + " " + str(arg2))
+code_array.generate_code()

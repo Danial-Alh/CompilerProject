@@ -39,8 +39,7 @@ reserved = {
 
 # List of token names.   This is always required
 tokens = [
-             'ID', 'NUMCONST', 'REALCONST', 'BOOLCONST',
-             'CHARCONST',
+             'ID', 'NUMCONST', 'REALCONST', 'BOOLCONST', 'CHARCONST',
              'LT', 'LE', 'GT', 'GE', 'EQ', 'NEQ', 'LPAR', 'RPAR', 'LBRACK', 'RBRACK', 'LBRACE', 'RBRACE',
              'PLUS', 'MINUS', 'MULT', 'DIV', 'MOD', 'ASSIGNMENT_SIGN',
              'SEMICOLON', 'DOUBLE_DOT', 'COMMA', 'COLON'
@@ -105,11 +104,11 @@ def t_NUMCONST(t):
 @TOKEN(charconst)
 def t_CHARCONST(t):
     if t.value == "\\0":
-        t.value = {"value": None, "type": "const_character"}
+        t.value = {"value": "NULL", "type": "const_character"}
     elif t.value[0] == '\'':
-        t.value = {"value": t.value[1:len(t.value) - 1], "type": "const_character"}
+        t.value = {"value": "\'" + t.value[1:len(t.value) - 1] + "\'", "type": "const_character"}
     else:
-        t.value = {"value": t.value[1:], "type": "const_character"}
+        t.value = {"value": "\'" + t.value[1:] + "\'", "type": "const_character"}
     return t
 
 
