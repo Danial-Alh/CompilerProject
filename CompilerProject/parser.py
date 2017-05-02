@@ -194,6 +194,7 @@ def p_expressions(p):
         if not p[1]["variable_info"]["declared"]:
             msg = "variable \'" + p[1]["variable_info"]["place"] + "\' not declared!!"
             print_error(msg, p.slice[1])
+        p[1]["variable_info"]["array_index_variable"] = p[3]["variable_info"]
         p[0] = p[1]
     elif p.slice[1].type == "constant_expressions":
         p[0] = symbol_table.get_new_temp_variable()
@@ -239,12 +240,53 @@ def p_bool_expressions_comparator(p):
 
 def p_bool_expressions_and(p):
     """bool_expressions     : AND pair"""
+    first_arg = p[2]["first_arg"]
+    second_arg = p[2]["second_arg"]
+    if "t_list" not in first_arg and "t_list" not in second_arg:
+        code_array.create_simple_if_check(first_arg)
+        code_array.create_simple_if_check(second_arg)
+    elif "t_list" not in first_arg:
+        code_array.create_simple_if_check(first_arg)
+    elif "t_list" not in second_arg:
+        code_array.create_simple_if_check(second_arg)
+    temp_var = symbol_table.get_new_temp_variable()
+    code_array.backpatch_e_list(first_arg["t_list"], code_array.get_next_quad_index())
+    code_array.append(code_array.get_new_entry('=', temp_var, {"value": "true", "type": "boolean"}, None, None))
+    code_array.append(code_array.get_new_entry('goto', None, second_arg["starting_quad_index"], None, None))
+    code_array.backpatch_e_list(first_arg["f_list"], code_array.get_next_quad_index())
+    code_array.append(code_array.get_new_entry('=', temp_var, {"value": "false", "type": "boolean"}, None, None))
+    code_array.append(code_array.get_new_entry('goto', None, second_arg["starting_quad_index"], None, None))
+    code_array.backpatch_e_list(second_arg["t_list"], code_array.get_next_quad_index())
+    code_array.create_simple_if_check(temp_var)
+    p[0] = {"t_list": temp_var["t_list"],
+            "f_list": code_array.merge_e_lists(temp_var["f_list"], second_arg["f_list"]),
+            "starting_quad_index": first_arg["starting_quad_index"]}
     return
 
 
 def p_bool_expressions_or(p):
     """bool_expressions     : OR pair"""
-
+    first_arg = p[2]["first_arg"]
+    second_arg = p[2]["second_arg"]
+    if "t_list" not in first_arg and "t_list" not in second_arg:
+        code_array.create_simple_if_check(first_arg)
+        code_array.create_simple_if_check(second_arg)
+    elif "t_list" not in first_arg:
+        code_array.create_simple_if_check(first_arg)
+    elif "t_list" not in second_arg:
+        code_array.create_simple_if_check(second_arg)
+    temp_var = symbol_table.get_new_temp_variable()
+    code_array.backpatch_e_list(first_arg["t_list"], code_array.get_next_quad_index())
+    code_array.append(code_array.get_new_entry('=', temp_var, {"value": "true", "type": "boolean"}, None, None))
+    code_array.append(code_array.get_new_entry('goto', None, second_arg["starting_quad_index"], None, None))
+    code_array.backpatch_e_list(first_arg["f_list"], code_array.get_next_quad_index())
+    code_array.append(code_array.get_new_entry('=', temp_var, {"value": "false", "type": "boolean"}, None, None))
+    code_array.append(code_array.get_new_entry('goto', None, second_arg["starting_quad_index"], None, None))
+    code_array.backpatch_e_list(second_arg["f_list"], code_array.get_next_quad_index())
+    code_array.create_simple_if_check(temp_var)
+    p[0] = {"t_list": code_array.merge_e_lists(temp_var["t_list"], second_arg["t_list"]),
+            "f_list": temp_var["f_list"],
+            "starting_quad_index": first_arg["starting_quad_index"]}
     return
 
 

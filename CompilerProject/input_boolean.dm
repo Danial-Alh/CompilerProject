@@ -5,7 +5,7 @@ procedure func ()
 	int x;
 	{
 	    x := +(#6,\o);
-		if and then (test,false)
+		if or(test,false)
 		then
 		x:= #1
 		else
