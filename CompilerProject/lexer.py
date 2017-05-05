@@ -115,7 +115,11 @@ def t_CHARCONST(t):
 
 @TOKEN(boolconst)
 def t_BOOLCONST(t):
-    t.value = {"value": t.value, "type": "boolean"}
+    if t.value == "true":
+        value = 1
+    else:
+        value = 0
+    t.value = {"value": value, "type": "bool"}
     return t
 
 
@@ -143,16 +147,3 @@ def t_error(t):
 
 # Build the lexer
 lexer = lex.lex()
-# # read input file
-# code = None
-# with open('./input.dm', 'r') as input_file:
-#     code = input_file.read()
-# # Give the lexer some input
-# lexer.input(code)
-#
-# # Tokenize
-# while True:
-#     tok = lexer.token()
-#     if not tok:
-#         break  # No more input
-#     print(tok)

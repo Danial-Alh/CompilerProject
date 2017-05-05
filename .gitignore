@@ -3,3 +3,5 @@
 Phase2/
 CompilerProject/parsing_table.py
 CompilerProject/parser.out
+CompilerProject/*.o*
+CompilerProject/*.c
