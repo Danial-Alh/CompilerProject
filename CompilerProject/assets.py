@@ -42,10 +42,10 @@ class CodeArray(list):
         return {"opt": opt, "result": result, "first_arg": first_arg, "second_arg": second_arg,
                 "label_used": label_used}
 
-    def emit(self, opt, result, first_arg, second_arg, label_used):
+    def emit(self, opt, result, first_arg, second_arg):
         if opt == "goto" and first_arg is not None:
             self[first_arg]["label_used"] = True
-        self.append(self.get_new_entry(opt, result, first_arg, second_arg, label_used))
+        self.append(self.get_new_entry(opt, result, first_arg, second_arg, False))
         return
 
     def get_next_quad_index(self):
@@ -97,9 +97,16 @@ class CodeArray(list):
                         code_array.get_new_entry("=", variable, variable["initializer"]["initial_value"][i], None,
                                                  None))
         elif variable["initializer"] is not None:
-            code_array.append(
-                code_array.get_new_entry("=", variable, variable["initializer"]["initial_value"][0], None, None))
+            code_array.emit("=", variable, variable["initializer"]["initial_value"][0], None)
         return
+
+    def store_boolean_expression_in_variable(self, bool_exp):
+        temp_var = symbol_table.get_new_temp_variable("bool")
+        self.emit("=", temp_var, {"value": 1, "type": "bool"}, None)
+        self.backpatch_e_list(bool_exp["t_list"], self.get_current_quad_index())
+        self.emit("=", temp_var, {"value": 0, "type": "bool"}, None)
+        self.backpatch_e_list(bool_exp["f_list"], self.get_current_quad_index())
+        return temp_var
 
 
 class CodeGenerator:

@@ -82,13 +82,11 @@ def p_dec(p):
         if p.slice[3].type == "range":
             p[0]["range"] = p[3]
         if p.slice[3].type == "NUMCONST":
-            from_variable = {"value": 0, "type": "int"}
+            from_variable = {"value": 1, "type": "int"}
             to_variable = p[3]
             p[0]["range"] = {"from": from_variable, "to": to_variable}
         array_size_variable = symbol_table.get_new_temp_variable("int")
-        code_array.emit("-", array_size_variable,
-                                                   p[0]["range"]["from"],
-                                                   p[0]["range"]["to"], None)
+        code_array.emit("-", array_size_variable, p[0]["range"]["to"], p[0]["range"]["from"])
         p[0]["array_size"] = array_size_variable
     return
 
@@ -106,7 +104,7 @@ def p_initializer(p):
                         | LBRACE initializer_list RBRACE"""
     p[0] = {}
     if p.slice[1].type == "LBRACE":
-        p[0]["initializer_type"] = "array_initializer"
+        p[0]["initializer_type"] = "array_iniitalizer"
         p[0]["initial_value"] = p[2]["initial_values"]
     else:
         p[0]["initializer_type"] = "single_initializer"
@@ -239,7 +237,9 @@ def p_bool_expressions_comparator(p):
                             | EQ pair 
                             | NEQ pair"""
     p[0] = {"t_list": [code_array.get_next_quad_index() + 1],
-            "f_list": [code_array.get_next_quad_index() + 2]}
+            "f_list": [code_array.get_next_quad_index() + 2],
+            "starting_quad_index": code_array.get_next_quad_index(),
+            "type": "bool"}
     opt = p.slice[1].type
     if opt == "EQ":
         opt = "=="
@@ -247,9 +247,9 @@ def p_bool_expressions_comparator(p):
         opt = "!="
     else:
         opt = p[1]
-    code_array.emit(opt, None, p[2]["first_arg"], p[2]["second_arg"], None)
-    code_array.emit("goto", None, None, None, None)
-    code_array.emit("goto", None, None, None, None)
+    code_array.emit(opt, None, p[2]["first_arg"], p[2]["second_arg"])
+    code_array.emit("goto", None, None, None)
+    code_array.emit("goto", None, None, None)
     return
 
 
@@ -265,17 +265,18 @@ def p_bool_expressions_and(p):
     elif "t_list" not in second_arg:
         code_array.create_simple_if_check(second_arg)
     temp_var = symbol_table.get_new_temp_variable("bool")
-    code_array.emit('=', temp_var, {"value": "true", "type": "bool"}, None, None)
+    code_array.emit('=', temp_var, {"value": 1, "type": "bool"}, None)
     code_array.backpatch_e_list(first_arg["t_list"], code_array.get_current_quad_index())
-    code_array.emit('goto', None, second_arg["starting_quad_index"], None, None)
-    code_array.emit('=', temp_var, {"value": "false", "type": "bool"}, None, None)
+    code_array.emit('goto', None, second_arg["starting_quad_index"], None)
+    code_array.emit('=', temp_var, {"value": 0, "type": "bool"}, None)
     code_array.backpatch_e_list(first_arg["f_list"], code_array.get_current_quad_index())
-    code_array.emit('goto', None, second_arg["starting_quad_index"], None, None)
+    code_array.emit('goto', None, second_arg["starting_quad_index"], None)
     code_array.create_simple_if_check(temp_var)
-    code_array.backpatch_e_list(second_arg["t_list"], code_array.get_current_quad_index()-2)
+    code_array.backpatch_e_list(second_arg["t_list"], code_array.get_current_quad_index() - 2)
     p[0] = {"t_list": temp_var["t_list"],
             "f_list": code_array.merge_e_lists(temp_var["f_list"], second_arg["f_list"]),
-            "starting_quad_index": first_arg["starting_quad_index"]}
+            "starting_quad_index": first_arg["starting_quad_index"],
+            "type": "bool"}
     return
 
 
@@ -291,17 +292,18 @@ def p_bool_expressions_or(p):
     elif "t_list" not in second_arg:
         code_array.create_simple_if_check(second_arg)
     temp_var = symbol_table.get_new_temp_variable("bool")
-    code_array.emit('=', temp_var, {"value": "true", "type": "bool"}, None, None)
+    code_array.emit('=', temp_var, {"value": 1, "type": "bool"}, None)
     code_array.backpatch_e_list(first_arg["t_list"], code_array.get_current_quad_index())
-    code_array.emit('goto', None, second_arg["starting_quad_index"], None, None)
-    code_array.emit('=', temp_var, {"value": "false", "type": "bool"}, None, None)
+    code_array.emit('goto', None, second_arg["starting_quad_index"], None)
+    code_array.emit('=', temp_var, {"value": 0, "type": "bool"}, None)
     code_array.backpatch_e_list(first_arg["f_list"], code_array.get_current_quad_index())
-    code_array.emit('goto', None, second_arg["starting_quad_index"], None, None)
+    code_array.emit('goto', None, second_arg["starting_quad_index"], None)
     code_array.create_simple_if_check(temp_var)
-    code_array.backpatch_e_list(second_arg["f_list"], code_array.get_current_quad_index()-2)
+    code_array.backpatch_e_list(second_arg["f_list"], code_array.get_current_quad_index() - 2)
     p[0] = {"t_list": code_array.merge_e_lists(temp_var["t_list"], second_arg["t_list"]),
             "f_list": temp_var["f_list"],
-            "starting_quad_index": first_arg["starting_quad_index"]}
+            "starting_quad_index": first_arg["starting_quad_index"],
+            "type": "bool"}
     return
 
 
@@ -319,7 +321,8 @@ def p_bool_expressions_and_then(p):
     code_array.backpatch_e_list(first_arg["t_list"], second_arg["starting_quad_index"])
     p[0] = {"t_list": second_arg["t_list"],
             "f_list": code_array.merge_e_lists(first_arg["f_list"], second_arg["f_list"]),
-            "starting_quad_index": first_arg["starting_quad_index"]}
+            "starting_quad_index": first_arg["starting_quad_index"],
+            "type": "bool"}
     return
 
 
@@ -337,7 +340,8 @@ def p_bool_expressions_or_else(p):
     code_array.backpatch_e_list(first_arg["f_list"], second_arg["starting_quad_index"])
     p[0] = {"f_list": second_arg["f_list"],
             "t_list": code_array.merge_e_lists(first_arg["t_list"], second_arg["t_list"]),
-            "starting_quad_index": first_arg["starting_quad_index"]}
+            "starting_quad_index": first_arg["starting_quad_index"],
+            "type": "bool"}
     return
 
 
@@ -348,7 +352,8 @@ def p_bool_expressions_not(p):
         code_array.create_simple_if_check(arg)
     p[0] = {"t_list": arg["f_list"],
             "f_list": arg["t_list"],
-            "starting_quad_index": arg["starting_quad_index"]}
+            "starting_quad_index": arg["starting_quad_index"],
+            "type": "bool"}
     return
 
 
@@ -360,15 +365,21 @@ def p_arithmetic_expressions1(p):
                                     | MOD pair
                                     | MINUS expressions"""
     if p.slice[2].type == "expressions":
-        first_arg = p[2]
-        second_arg = None
         exp_type = p[1]["type"]
+        if exp_type == "bool" and "place" not in p[2]:
+            p[1] = code_array.store_boolean_expression_in_variable(p[1])
+        first_arg = p[1]
+        second_arg = None
     else:
+        if p[2]["first_arg"]["type"] == "bool" and "place" not in p[2]["first_arg"]:
+            p[2]["first_arg"] = code_array.store_boolean_expression_in_variable(p[2]["first_arg"])
+        if p[2]["second_arg"]["type"] == "bool" and "place" not in p[2]["second_arg"]:
+            p[2]["second_arg"] = code_array.store_boolean_expression_in_variable(p[2]["second_arg"])
         first_arg = p[2]["first_arg"]
         second_arg = p[2]["second_arg"]
         pattern = r'(\*|\+|\-|\/)'
         if re.match(pattern, p[1]):
-            exp_type = get_pair_type(p[2])
+            exp_type = get_pair_type_for_arithmetic_expression(p[2])
         else:
             if p[2]["type"] != "real":
                 exp_type = "int"
@@ -386,38 +397,38 @@ def p_pair(p):
     return
 
 
-def get_pair_type(pair):
+def get_pair_type_for_arithmetic_expression(pair):
     first_arg_type = pair["first_arg"]["type"]
     second_arg_type = pair["second_arg"]["type"]
     if first_arg_type == "int":
         if second_arg_type == "int":
             pair_type = "int"
-        if second_arg_type == "character":
+        elif second_arg_type == "char":
             pair_type = "int"
-        if second_arg_type == "real":
+        elif second_arg_type == "real":
             pair_type = "real"
-        if second_arg_type == "bool":
+        elif second_arg_type == "bool":
             pair_type = "int"
-    if first_arg_type == "character":
+    if first_arg_type == "char":
         if second_arg_type == "int":
             pair_type = "int"
-        if second_arg_type == "character":
-            pair_type = "character"
-        if second_arg_type == "real":
+        elif second_arg_type == "char":
+            pair_type = "char"
+        elif second_arg_type == "real":
             pair_type = "real"
-        if second_arg_type == "bool":
+        elif second_arg_type == "bool":
             pair_type = "int"
     if first_arg_type == "real":
         pair_type = "real"
     if first_arg_type == "bool":
         if second_arg_type == "int":
             pair_type = "int"
-        if second_arg_type == "character":
+        elif second_arg_type == "char":
             pair_type = "int"
-        if second_arg_type == "real":
+        elif second_arg_type == "real":
             pair_type = "real"
-        if second_arg_type == "bool":
-            pair_type = "bool"
+        elif second_arg_type == "bool":
+            pair_type = "int"
     return pair_type
 
 
@@ -460,10 +471,12 @@ def run_lexer(input_file_path):
         print(tok)
     return
 
+
 def main():
     # run_lexer("./input_boolean.dm")
     run_compiler("./input_boolean.dm", "./output_code.c")
     return
+
 
 # Build the parser
 parser = yacc.yacc(tabmodule="parsing_table")

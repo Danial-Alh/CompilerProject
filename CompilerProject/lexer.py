@@ -105,11 +105,11 @@ def t_NUMCONST(t):
 @TOKEN(charconst)
 def t_CHARCONST(t):
     if t.value == "\\0":
-        t.value = {"value": "NULL", "type": "character"}
+        t.value = {"value": "NULL", "type": "char"}
     elif t.value[0] == '\'':
-        t.value = {"value": "\'" + t.value[1:len(t.value) - 1] + "\'", "type": "character"}
+        t.value = {"value": "\'" + t.value[1:len(t.value) - 1] + "\'", "type": "char"}
     else:
-        t.value = {"value": "\'" + t.value[1:] + "\'", "type": "character"}
+        t.value = {"value": "\'" + t.value[1:] + "\'", "type": "char"}
     return t
 
 
