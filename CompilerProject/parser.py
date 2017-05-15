@@ -212,7 +212,12 @@ def p_statement_for(p):
 def p_statement_switch(p):
     """statement            : SWITCH expressions qis_1 case_element default END
                             | SWITCH expressions qis_1 case_element END"""
-    code_array.backpatch_e_list(p[3]["goto_quad_index"], code_array.get_next_quad_index())
+    if p[2]["type"] == "bool" and "place" not in p[2] and "value" not in p[2]:
+        p[2] = code_array.store_boolean_expression_in_variable(p[2])
+        code_array.emit("goto", None, code_array.get_next_quad_index() + 1, None)
+        code_array.backpatch_e_list(p[3]["goto_quad_index"], code_array.get_next_quad_index())
+    else:
+        code_array.backpatch_e_list(p[3]["goto_quad_index"], code_array.get_next_quad_index())
     next_list = []
     for case_element in p[4]:
         code_array.emit("==", None, p[2], case_element["num_constraint"])

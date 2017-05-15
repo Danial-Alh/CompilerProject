@@ -101,7 +101,7 @@ class CodeArray(list):
         return
 
     def store_boolean_expression_in_variable(self, exp):
-        if exp["type"] == "bool" and "place" not in exp:
+        if exp["type"] == "bool" and "place" not in exp and "value" not in exp:
             if "value" in exp:
                 self.create_simple_if_check(exp)
             temp_var = symbol_table.get_new_temp_variable("bool")
