@@ -5,3 +5,5 @@ CompilerProject/parsing_table.py
 CompilerProject/parser.out
 CompilerProject/*.o*
 CompilerProject/*.c
+/**/*.pdf
+/**/*.docx

@@ -43,8 +43,6 @@ class CodeArray(list):
                 "label_used": label_used}
 
     def emit(self, opt, result, first_arg, second_arg):
-        if opt == "goto" and first_arg is not None:
-            self[first_arg]["label_used"] = True
         self.append(self.get_new_entry(opt, result, first_arg, second_arg, False))
         return
 
@@ -55,16 +53,15 @@ class CodeArray(list):
         return len(self) - 1
 
     def create_simple_if_check(self, arg):
+        starting_quad_index = code_array.get_next_quad_index()
         arg["t_list"] = [code_array.get_next_quad_index() + 1]
         arg["f_list"] = [code_array.get_next_quad_index() + 2]
-        arg["starting_quad_index"] = code_array.get_next_quad_index()
         code_array.append(code_array.get_new_entry("if", None, arg, None, None))
         code_array.append(code_array.get_new_entry("goto", None, None, None, None))
         code_array.append(code_array.get_new_entry("goto", None, None, None, None))
-        return
+        return starting_quad_index
 
     def backpatch_e_list(self, e_list, target):
-        code_array[target]["label_used"] = True
         for quad_entry_index in e_list:
             code_array[quad_entry_index]["first_arg"] = target
         return
@@ -81,8 +78,11 @@ class CodeArray(list):
         else:
             result = str(variable["place"])
             if variable["is_array"]:
-                index_string = code_array.get_variable_string(variable["array_index"])
-                result += "[" + str(index_string) + "]"
+                if "array_index" not in variable:
+                    error_handler.print_error("array without index!!!!")
+                else:
+                    index_string = code_array.get_variable_string(variable["array_index"])
+                    result += "[" + str(index_string) + "]"
         return result
 
     def initialize_variable(self, variable):
@@ -100,13 +100,17 @@ class CodeArray(list):
             code_array.emit("=", variable, variable["initializer"]["initial_value"][0], None)
         return
 
-    def store_boolean_expression_in_variable(self, bool_exp):
-        temp_var = symbol_table.get_new_temp_variable("bool")
-        self.emit("=", temp_var, {"value": 1, "type": "bool"}, None)
-        self.backpatch_e_list(bool_exp["t_list"], self.get_current_quad_index())
-        self.emit("=", temp_var, {"value": 0, "type": "bool"}, None)
-        self.backpatch_e_list(bool_exp["f_list"], self.get_current_quad_index())
-        return temp_var
+    def store_boolean_expression_in_variable(self, exp):
+        if exp["type"] == "bool" and "place" not in exp:
+            if "value" in exp:
+                self.create_simple_if_check(exp)
+            temp_var = symbol_table.get_new_temp_variable("bool")
+            self.emit("=", temp_var, {"value": 1, "type": "bool"}, None)
+            self.backpatch_e_list(exp["t_list"], self.get_current_quad_index())
+            self.emit("=", temp_var, {"value": 0, "type": "bool"}, None)
+            self.backpatch_e_list(exp["f_list"], self.get_current_quad_index())
+            exp = temp_var
+        return exp
 
 
 class CodeGenerator:
@@ -116,6 +120,9 @@ class CodeGenerator:
         self.result_code = ""
 
     def generate_code(self):
+        for entry in code_array:
+            if entry["opt"] == "goto" and entry["first_arg"] is not None:
+                code_array[entry["first_arg"]]["label_used"] = True
         self.result_code = ""
         self.__add_to_result_code("#include <stdlib.h>")
         self.__add_to_result_code("#include <stdbool.h>")
@@ -130,7 +137,6 @@ class CodeGenerator:
         return self.result_code
 
     def __generate_variables(self):
-        result = ""
         for entry in symbol_table:
             declaration_code = entry["type"] + " "
             if entry["is_array"]:
@@ -161,7 +167,7 @@ class CodeGenerator:
             ########################################################################################################
             elif opt == '=':
                 arg1 = code_array.get_variable_string(entry["first_arg"])
-                entry_code += entry["result"]["place"] + " = " + str(arg1) + ";"
+                entry_code += code_array.get_variable_string(entry["result"]) + " = " + str(arg1) + ";"
             ########################################################################################################
             elif opt == '<' or opt == '<=' or opt == '>' or opt == '>=' or opt == '==' or opt == '!=':
                 arg1 = code_array.get_variable_string(entry["first_arg"])
@@ -195,5 +201,18 @@ class CodeGenerator:
         self.result_code += code + "\n"
 
 
+class ErrorHandler:
+    def print_error(self, msg, p):
+        print(msg + "\tline: " + str(p.lineno))
+        # raise SyntaxError
+        return
+
+    def print_error(self, msg):
+        print(msg)
+        # raise SyntaxError
+        return
+
+
 symbol_table = SymbolTable()
 code_array = CodeArray()
+error_handler = ErrorHandler()
