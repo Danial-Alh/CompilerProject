@@ -45,6 +45,7 @@ procedure func (int inputt; boolean which;) {
 
     procedure abs (int input;)
     {
+        int u;
         {
             if >(input, \0) then {return input;u:=#89;}
             else return *(-#1, input);
@@ -52,21 +53,22 @@ procedure func (int inputt; boolean which;) {
     };
 main 
 {
-	a:=#2;
-	switch +(a,#2)
+	a:=#10;
+	switch +(a,#1)
 	case #4: 
 	{
-		a:=+(a, #1);
+		a:=+(a, #4);
 	}
 	case #5:
 	{
-		a:=-(a, #1);
+		a:=-(a, #5);
 	}
 	default:
 	{
-		a:=*(a, #1);
+		a:=%(a, false);
 	}
 	end;
+	print a;
 	d[#1]:=#2;
 	
 }

@@ -1,7 +1,7 @@
 import re, copy
 import ply.yacc as yacc
 from lexer import tokens, lexer
-from assets import symbol_table, code_array, error_handler, CodeGenerator
+from assets import symbol_table, code_array, CodeGenerator, CompilationException
 
 start = 'program'
 
@@ -35,7 +35,7 @@ def p_declarations(p):
             declarator["index"] = index
             code_array.initialize_variable(declarator)
         else:
-            error_handler.print_error("multiple variable \'" + place + "\' declaration!!", p.slice[1])
+            raise CompilationException("multiple variable \'" + place + "\' declaration!!", p.slice[1])
     return
 
 
@@ -46,6 +46,8 @@ def p_type_specifiers(p):
                             | BOOLEAN"""
     if p[1] == "boolean":
         p[1] = "bool"
+    elif p[1] == "real":
+        p[1] = "float"
     p[0] = {"type": p[1]}
     return
 
@@ -82,11 +84,13 @@ def p_dec(p):
         if p.slice[3].type == "range":
             p[0]["range"] = p[3]
         if p.slice[3].type == "NUMCONST":
-            from_variable = {"value": 1, "type": "int"}
-            to_variable = p[3]
+            from_variable = {"value": 0, "type": "int"}
+            to_variable = symbol_table.get_new_temp_variable("int")
+            code_array.emit("-", to_variable, p[3], {"value": 1, "type": "int"})
             p[0]["range"] = {"from": from_variable, "to": to_variable}
         array_size_variable = symbol_table.get_new_temp_variable("int")
         code_array.emit("-", array_size_variable, p[0]["range"]["to"], p[0]["range"]["from"])
+        code_array.emit("+", array_size_variable, array_size_variable, {"value": 1, "type": "int"})
         p[0]["array_size"] = array_size_variable
     return
 
@@ -95,6 +99,9 @@ def p_range(p):
     """range        : ID DOUBLE_DOT ID
                     | NUMCONST DOUBLE_DOT NUMCONST
                     | arithmetic_expressions DOUBLE_DOT arithmetic_expressions"""
+    if p.slice[1].type == "ID":
+        symbol_table.check_variable_declaration(p[1], p.slice[1])
+        code_array.check_variable_is_not_array(p[1], p.slice[1])
     p[0] = {"from": p[1], "to": p[3]}
     return
 
@@ -150,20 +157,30 @@ def p_statement_list(p):
     return
 
 
+def p_statement_print(p):
+    """statement            : PRINT ID
+                            | PRINT ID LBRACK expressions RBRACK"""
+    symbol_table.check_variable_declaration(p[2], p.slice[2])
+    if len(p) == 6:
+        var_copy = code_array.setup_array_variable(p[2], p[4], p.slice[2])
+        code_array.emit("print", None, var_copy, None)
+    else:
+        code_array.check_variable_is_not_array(p[2], p.slice[2])
+        code_array.emit("print", None, p[2], None)
+    return
+
+
 def p_statement_assignment(p):
     """statement            : ID ASSIGNMENT_SIGN expressions
                             | ID LBRACK expressions RBRACK ASSIGNMENT_SIGN expressions"""
-    if not p[1]["declared"]:
-        msg = "variable \'" + p[1]["place"] + "\' not declared!!"
-        error_handler.print_error(msg, p.slice[1])
+    symbol_table.check_variable_declaration(p[1], p.slice[1])
     p[3] = code_array.store_boolean_expression_in_variable(p[3])
     if len(p) == 4:
+        code_array.check_variable_is_not_array(p[1], p.slice[1])
         code_array.emit("=", p[1], p[3], None)
     else:
-        p[3] = code_array.store_boolean_expression_in_variable(p[3])
         p[6] = code_array.store_boolean_expression_in_variable(p[6])
-        var_copy = copy.deepcopy(p[1])
-        var_copy["array_index"] = p[3]
+        var_copy = code_array.setup_array_variable(p[1], p[3], p.slice[1])
         code_array.emit("=", var_copy, p[6], None)
     return
 
@@ -196,9 +213,8 @@ def p_statement_do_while(p):
 
 def p_statement_for(p):
     """statement            : FOR ID ASSIGNMENT_SIGN counter DO qis_1 statement"""
-    if not p[2]["declared"]:
-        msg = "variable \'" + p[2]["place"] + "\' not declared!!"
-        error_handler.print_error(msg, p.slice[1])
+    symbol_table.check_variable_declaration(p[2], p.slice[2])
+    code_array.check_variable_is_not_array(p[2], p.slice[2])
     code_array.emit(p[4]["opt"], p[2], p[2], {"value": 1, "type": "int"})
     code_array.emit("goto", None, code_array.get_next_quad_index() + 2, None)
     code_array.backpatch_e_list(p[6]["goto_quad_index"], code_array.get_next_quad_index())
@@ -296,13 +312,12 @@ def p_expressions(p):
                         | ID LPAR arguments_list RPAR 
                         | LPAR expressions RPAR"""
     if p.slice[1].type == "ID":
-        if not p[1]["declared"]:
-            msg = "variable \'" + p[1]["place"] + "\' not declared!!"
-            error_handler.print_error(msg, p.slice[1])
-        p[0] = p[1]
+        symbol_table.check_variable_declaration(p[1], p.slice[1])
         if len(p) == 5 and p.slice[3].type == "expressions":
-            p[3] = code_array.store_boolean_expression_in_variable(p[3])
-            p[0]["array_index"] = p[3]
+            p[0] = code_array.setup_array_variable(p[1], p[3], p.slice[1])
+        else:
+            code_array.check_variable_is_not_array(p[1], p.slice[1])
+            p[0] = p[1]
     elif p.slice[1].type == "constant_expressions":
         p[0] = p[1]
     elif p.slice[1].type == "LPAR":
@@ -439,26 +454,22 @@ def p_arithmetic_expressions(p):
                                     | MOD pair
                                     | MINUS expressions"""
     if p.slice[2].type == "expressions":
-        exp_type = p[1]["type"]
-        p[1] = code_array.store_boolean_expression_in_variable(p[1])
-        first_arg = p[1]
-        second_arg = None
+        exp_type = get_type_of_arithmetic_expression("int", p[2]["type"])
+        p[2] = code_array.store_boolean_expression_in_variable(p[2])
+        first_arg = {"value": 0, "type": "int"}
+        second_arg = p[2]
     else:
         p[2]["first_arg"] = code_array.store_boolean_expression_in_variable(p[2]["first_arg"])
         p[2]["second_arg"] = code_array.store_boolean_expression_in_variable(p[2]["second_arg"])
         first_arg = p[2]["first_arg"]
         second_arg = p[2]["second_arg"]
-        pattern = r'(\*|\+|\-|\/)'
-        if re.match(pattern, p[1]):
-            exp_type = get_pair_type_for_arithmetic_expression(p[2])
-        else:
-            if p[2]["type"] != "real":
-                exp_type = "int"
-            else:
-                exp_type = "real"
+        # pattern = r'(\*|\+|\-|\/)'
+        # if re.match(pattern, p[1]):
+        exp_type = get_type_of_pair_for_arithmetic_expression(p[2])
     p[0] = symbol_table.get_new_temp_variable(exp_type)
-    new_code_entry = code_array.get_new_entry(p[1], p[0], first_arg, second_arg, None)
-    code_array.append(new_code_entry)
+    code_array.emit(p[1], p[0], first_arg, second_arg)
+    if (p[1] == "%" or p[1] == "/") and second_arg["value"] == 0:
+        raise CompilationException("division by zero!!", p.slice[2])
     return
 
 
@@ -484,45 +495,49 @@ def p_qis_1(p):
     return
 
 
-def get_pair_type_for_arithmetic_expression(pair):
-    first_arg_type = pair["first_arg"]["type"]
-    second_arg_type = pair["second_arg"]["type"]
+def get_type_of_arithmetic_expression(first_arg_type, second_arg_type):
     if first_arg_type == "int":
         if second_arg_type == "int":
             pair_type = "int"
         elif second_arg_type == "char":
-            pair_type = "int"
-        elif second_arg_type == "real":
-            pair_type = "real"
+            pair_type = "char"
+        elif second_arg_type == "float":
+            pair_type = "float"
         elif second_arg_type == "bool":
             pair_type = "int"
     if first_arg_type == "char":
         if second_arg_type == "int":
-            pair_type = "int"
+            pair_type = "char"
         elif second_arg_type == "char":
             pair_type = "char"
-        elif second_arg_type == "real":
-            pair_type = "real"
+        elif second_arg_type == "float":
+            pair_type = "float"
         elif second_arg_type == "bool":
-            pair_type = "int"
-    if first_arg_type == "real":
-        pair_type = "real"
+            pair_type = "char"
+    if first_arg_type == "float":
+        pair_type = "float"
     if first_arg_type == "bool":
         if second_arg_type == "int":
             pair_type = "int"
         elif second_arg_type == "char":
-            pair_type = "int"
-        elif second_arg_type == "real":
-            pair_type = "real"
+            pair_type = "char"
+        elif second_arg_type == "float":
+            pair_type = "float"
         elif second_arg_type == "bool":
             pair_type = "int"
     return pair_type
 
 
+def get_type_of_pair_for_arithmetic_expression(pair):
+    first_arg_type = pair["first_arg"]["type"]
+    second_arg_type = pair["second_arg"]["type"]
+    return get_type_of_arithmetic_expression(first_arg_type, second_arg_type)
+
+
 def p_error(p):
-    print("Syntax error in input!")
-    print(str(p) + str(p.lineno))
-    parser.restart()
+    msg = "Syntax error in input!\n" + str(p)
+    raise CompilationException(msg, p)
+    # parser.restart()
 
 
 def run_compiler(input_file_path, output_file_path):
@@ -555,10 +570,21 @@ def run_lexer(input_file_path):
 
 def main():
     # run_lexer("./input_boolean.dm")
-    run_compiler("./input_boolean.dm", "./output_code.c")
+    run_compiler("./input.dm", "./output_code.c")
+    from subprocess import check_output
+    str_out = check_output("gcc ./output_code.c -o a.out", shell=True).decode()
+    if str_out != "":
+        return
+    else:
+        print(str_out)
+    str_out = check_output("a.out", shell=True).decode()
+    print(str_out)
     return
 
 
 # Build the parser
 parser = yacc.yacc(tabmodule="parsing_table")
-main()
+try:
+    main()
+except CompilationException as e:
+    print(e.msg)

@@ -33,6 +33,11 @@ class SymbolTable(list):
         self.append(identifier)
         return len(self) - 1
 
+    def check_variable_declaration(self, variable, param):
+        if not variable["declared"]:
+            msg = "variable \'" + variable["place"] + "\' not declared!!"
+            raise CompilationException(msg, param)
+
 
 class CodeArray(list):
     def get_new_entry(self):
@@ -56,9 +61,9 @@ class CodeArray(list):
         starting_quad_index = code_array.get_next_quad_index()
         arg["t_list"] = [code_array.get_next_quad_index() + 1]
         arg["f_list"] = [code_array.get_next_quad_index() + 2]
-        code_array.append(code_array.get_new_entry("if", None, arg, None, None))
-        code_array.append(code_array.get_new_entry("goto", None, None, None, None))
-        code_array.append(code_array.get_new_entry("goto", None, None, None, None))
+        code_array.emit("if", None, arg, None)
+        code_array.emit("goto", None, None, None)
+        code_array.emit("goto", None, None, None)
         return starting_quad_index
 
     def backpatch_e_list(self, e_list, target):
@@ -79,7 +84,7 @@ class CodeArray(list):
             result = str(variable["place"])
             if variable["is_array"]:
                 if "array_index" not in variable:
-                    error_handler.print_error("array without index!!!!")
+                    raise CompilationException("array \'" + variable["place"] + "\' without index!!!")
                 else:
                     index_string = code_array.get_variable_string(variable["array_index"])
                     result += "[" + str(index_string) + "]"
@@ -87,15 +92,12 @@ class CodeArray(list):
 
     def initialize_variable(self, variable):
         if variable["is_array"]:
-            code_array.append(
-                code_array.get_new_entry("malloc", variable, None, None, None))
+            code_array.emit("malloc", variable, None, None)
             if variable["initializer"] is not None:
                 for i in range(0, len(variable["initializer"]["initial_value"])):
                     temp_variable = copy.deepcopy(variable)
-                    temp_variable["array_index"] = i
-                    code_array.append(
-                        code_array.get_new_entry("=", variable, variable["initializer"]["initial_value"][i], None,
-                                                 None))
+                    temp_variable["array_index"] = {"value": i, "type": "int"}
+                    code_array.emit("=", temp_variable, variable["initializer"]["initial_value"][i], None)
         elif variable["initializer"] is not None:
             code_array.emit("=", variable, variable["initializer"]["initial_value"][0], None)
         return
@@ -107,10 +109,27 @@ class CodeArray(list):
             temp_var = symbol_table.get_new_temp_variable("bool")
             self.emit("=", temp_var, {"value": 1, "type": "bool"}, None)
             self.backpatch_e_list(exp["t_list"], self.get_current_quad_index())
+            self.emit("goto", None, self.get_next_quad_index() + 2, None)
             self.emit("=", temp_var, {"value": 0, "type": "bool"}, None)
             self.backpatch_e_list(exp["f_list"], self.get_current_quad_index())
             exp = temp_var
         return exp
+
+    def setup_array_variable(self, target_variable, index, variable_param):
+        if not target_variable["is_array"]:
+            raise CompilationException("non array variable \'" + target_variable["place"] + "\' with index!!",
+                                       variable_param)
+        var_copy = copy.deepcopy(target_variable)
+        index = code_array.store_boolean_expression_in_variable(index)
+        array_index_variable = symbol_table.get_new_temp_variable("int")
+        code_array.emit("-", array_index_variable, index, var_copy["range"]["from"])
+        var_copy["array_index"] = array_index_variable
+        return var_copy
+
+    def check_variable_is_not_array(self, variable, param):
+        if variable["is_array"]:
+            raise CompilationException("array \'" + variable["place"] + "\' without index!!!", param)
+        return
 
 
 class CodeGenerator:
@@ -126,6 +145,7 @@ class CodeGenerator:
         self.result_code = ""
         self.__add_to_result_code("#include <stdlib.h>")
         self.__add_to_result_code("#include <stdbool.h>")
+        self.__add_to_result_code("#include <stdio.h>")
         self.__add_to_result_code("int main()")
         self.__add_to_result_code("{")
         self.number_of_indentation = 1
@@ -162,12 +182,14 @@ class CodeGenerator:
             elif opt == '+' or opt == '-' or opt == '*' or opt == '/' or opt == '%':
                 arg1 = code_array.get_variable_string(entry["first_arg"])
                 arg2 = code_array.get_variable_string(entry["second_arg"])
-                entry_code += entry["result"]["place"] + " = " + str(arg1) + " " + opt + " " + str(
+                entry_code += entry["result"]["place"] + " = (" + entry["first_arg"]["type"] + ") " + str(
+                    arg1) + " " + opt + " " + str(
                     arg2) + ";"
             ########################################################################################################
             elif opt == '=':
                 arg1 = code_array.get_variable_string(entry["first_arg"])
-                entry_code += code_array.get_variable_string(entry["result"]) + " = " + str(arg1) + ";"
+                entry_code += code_array.get_variable_string(entry["result"]) + " = (" + entry["first_arg"][
+                    "type"] + ") " + str(arg1) + ";"
             ########################################################################################################
             elif opt == '<' or opt == '<=' or opt == '>' or opt == '>=' or opt == '==' or opt == '!=':
                 arg1 = code_array.get_variable_string(entry["first_arg"])
@@ -186,6 +208,12 @@ class CodeGenerator:
                 entry_code += "if (" + str(arg1) + ")"
                 self.should_indent = True
             ########################################################################################################
+            elif opt == 'print':
+                arg1 = code_array.get_variable_string(entry["first_arg"])
+                char_type = "%d"
+                if entry["first_arg"]["type"] == "char":
+                    char_type = "%c"
+                entry_code += "printf(\"" + char_type + "\", " + arg1 + ");"
             else:
                 entry_code += str(entry)
             self.__add_to_result_code(entry_code)
@@ -201,18 +229,14 @@ class CodeGenerator:
         self.result_code += code + "\n"
 
 
-class ErrorHandler:
-    def print_error(self, msg, p):
-        print(msg + "\tline: " + str(p.lineno))
-        # raise SyntaxError
-        return
-
-    def print_error(self, msg):
-        print(msg)
-        # raise SyntaxError
+class CompilationException(Exception):
+    def __init__(self, msg, params=None):
+        if params is not None:
+            msg += "\tline: " + str(params.lineno)
+        self.msg = msg
+        Exception.__init__(self, msg)
         return
 
 
 symbol_table = SymbolTable()
 code_array = CodeArray()
-error_handler = ErrorHandler()

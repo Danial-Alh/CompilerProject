@@ -5,7 +5,7 @@
 # numbers and +,-,*,/
 # ------------------------------------------------------------
 import ply.lex as lex
-from assets import symbol_table
+from assets import symbol_table, CompilationException
 from ply.lex import TOKEN
 import copy
 
@@ -36,6 +36,7 @@ reserved = {
     'and': 'AND',
     'or': 'OR',
     'not': 'NOT',
+    'print': 'PRINT'
 }
 
 # List of token names.   This is always required
@@ -76,7 +77,7 @@ t_PLUS = r'\+'
 t_MINUS = r'-'
 t_MULT = r'\*'
 t_DIV = r'\/'
-t_MOD = r'%'
+t_MOD = r'\%'
 t_ASSIGNMENT_SIGN = r'\:='
 t_SEMICOLON = r';'
 t_DOUBLE_DOT = r'\.\.'
@@ -92,7 +93,7 @@ def t_NEWLINE(t):
 
 @TOKEN(realconst)
 def t_REALCONST(t):
-    t.value = {"value": float(t.value[1:]), "type": "real"}
+    t.value = {"value": float(t.value[1:]), "type": "float"}
     return t
 
 
@@ -105,7 +106,7 @@ def t_NUMCONST(t):
 @TOKEN(charconst)
 def t_CHARCONST(t):
     if t.value == "\\0":
-        t.value = {"value": "NULL", "type": "char"}
+        t.value = {"value": 0, "type": "char"}
     elif t.value[0] == '\'':
         t.value = {"value": "\'" + t.value[1:len(t.value) - 1] + "\'", "type": "char"}
     else:
@@ -141,8 +142,8 @@ def t_ID(t):
 
 
 def t_error(t):
-    print("Illegal character " + str(t.value[0]) + " line num: " + str(t.lineno))
-    t.lexer.skip(1)
+    raise CompilationException("Illegal character " + str(t.value[0]), t)
+    # t.lexer.skip(1)
 
 
 # Build the lexer
