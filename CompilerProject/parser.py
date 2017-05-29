@@ -11,31 +11,37 @@ precedence = (
 
 
 def p_program(p):
-    """program      : PROGRAM ID declarations_list procedure_list MAIN block
-                    | PROGRAM ID procedure_list MAIN block
-                    | PROGRAM ID declarations_list MAIN block
-                    | PROGRAM ID MAIN block"""
+    """program      : PROGRAM psc ID declarations_list procedure_list MAIN block
+                    | PROGRAM psc ID procedure_list MAIN block
+                    | PROGRAM psc ID declarations_list MAIN block
+                    | PROGRAM psc ID MAIN block"""
+    symbol_table.set_root()
     return
 
 
 def p_declarations_list(p):
     """declarations_list    : declarations 
                             | declarations_list declarations"""
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = p[1] + p[2]
     return
 
 
 def p_declarations(p):
     """declarations     : type_specifiers declarator_list SEMICOLON"""
+    declarations = []
     for declarator in p[2]["declarations_info"]:
         declarator["type"] = p[1]["type"]
         place = declarator["place"]
         if place not in symbol_table:
-            index = symbol_table.install_id(declarator)
-            declarator["declared"] = True
-            declarator["index"] = index
+            symbol_table.install_variable(declarator)
             code_array.initialize_variable(declarator)
         else:
             raise CompilationException("multiple variable \'" + place + "\' declaration!!", p.slice[1])
+        declarations.append(declarator)
+    p[0] = declarations
     return
 
 
@@ -130,19 +136,49 @@ def p_initializer_list(p):
 
 
 def p_procedure_list(p):
-    """procedure_list       : procedure_list procedure_nt
-                            | procedure_nt"""
+    """procedure_list       : procedure_list procedure
+                            | procedure"""
 
 
 def p_procedure(p):
-    """procedure_nt         : PROCEDURE ID parameters LBRACE declarations_list block RBRACE SEMICOLON
-                            | PROCEDURE ID parameters LBRACE block RBRACE SEMICOLON"""
+    """procedure        : PROCEDURE psc ID parameters LBRACE declarations_list qis_1 block RBRACE SEMICOLON
+                        | PROCEDURE psc ID parameters LBRACE qis_1 block RBRACE SEMICOLON"""
+    procedure = {"place": p[3]["place"], "quad_index": p[2]["quad_index"], "parameters": p[4]}
+    place = procedure["place"]
+    if place not in symbol_table:
+        symbol_table.install_procedure(procedure)
+    else:
+        raise CompilationException("multiple procedure \'" + place + "\' declaration!!", p.slice[3])
+    p[0] = procedure
+
+    # goto return statements
+    exit_procedure_statements_quad_index = code_array.get_next_quad_index()
+    return_address_variable = symbol_table.get_new_temp_variable("void*")
+    code_array.emit("pop", return_address_variable, None, None)
+    code_array.emit("short jump", None, return_address_variable, None)
+    begin_procedure_statements_quad_index = code_array.get_next_quad_index()
+
+    # backpatch qis_1 with begin proc statements
+    if len(p) == 10:
+        qis_1 = p[6]
+    else:
+        qis_1 = p[7]
+    code_array.backpatch_e_list(qis_1["goto_quad_index"], begin_procedure_statements_quad_index)
+    # load arguments
+    for parameter in procedure["parameters"]:
+        code_array.emit("pop", parameter, None, None)
+    # goto beginning of proc
+    code_array.emit("goto", None, qis_1["quad_index"], None)
     return
 
 
 def p_parameters(p):
     """parameters       : LPAR declarations_list RPAR
                         | LPAR RPAR"""
+    if len(p) == 3:
+        p[0] = []
+    else:
+        p[0] = p[2]
     return
 
 
@@ -186,9 +222,28 @@ def p_statement_assignment(p):
 
 
 def p_statement_function_call(p):
-    """statement            : ID LPAR arguments_list RPAR
-                            | RETURN expressions"""
+    """statement            : ID LPAR arguments_list RPAR"""
+    procedure = p[1]
+    symbol_table.check_procedure_declaration(procedure, p.slice[1])
+    if len(p[3]) != len(procedure["parameters"]):
+        raise CompilationException(
+            "function call didn't match with function \'" + procedure["place"] + "\' declaration!",
+            p.slice[1])
+    code_array.save_context()
+    code_array.emit("push", None, {"value": 0, "type": "int"}, None)
+    return_address_variable = symbol_table.get_new_temp_variable("void*")
+    code_array.emit("&&", return_address_variable, code_array.get_next_quad_index() + len(p[3]) + 3, None)
+    code_array.emit("push", None, return_address_variable, None)
+    for argument in p[3]:
+        code_array.emit("push", None, argument, None)
+    code_array.emit("call", None, procedure["quad_index"], None)
+    code_array.emit("pop", symbol_table.get_new_temp_variable("int"), None, None)
+    code_array.restore_context()
+    return
 
+
+def p_statement_function_return(p):
+    """statement            : RETURN expressions"""
     return
 
 
@@ -261,12 +316,22 @@ def p_statement_block(p):
 def p_arguments_list(p):
     """arguments_list       : multi_arguments
                             | """
+    if len(p) == 1:
+        p[0] = []
+    else:
+        p[0] = p[1]
     return
 
 
 def p_multi_arguments(p):
     """multi_arguments      : multi_arguments COMMA expressions 
                             | expressions"""
+    if len(p) == 2:
+        p[1] = code_array.store_boolean_expression_in_variable(p[1])
+        p[0] = [p[1]]
+    else:
+        p[3] = code_array.store_boolean_expression_in_variable(p[3])
+        p[0] = p[1] + [p[3]]
     return
 
 
@@ -309,7 +374,6 @@ def p_expressions(p):
                         | arithmetic_expressions
                         | ID 
                         | ID LBRACK expressions RBRACK 
-                        | ID LPAR arguments_list RPAR 
                         | LPAR expressions RPAR"""
     if p.slice[1].type == "ID":
         symbol_table.check_variable_declaration(p[1], p.slice[1])
@@ -324,6 +388,11 @@ def p_expressions(p):
         p[0] = p[2]
     else:
         p[0] = p[1]
+    return
+
+
+def p_expressions_function_call(p):
+    """expressions      : ID LPAR arguments_list RPAR"""
     return
 
 
@@ -481,7 +550,7 @@ def p_pair(p):
     return
 
 
-def p_qis(p):
+def p_qis(p):  # qis: quad index saver
     """qis      : """
     p[0] = {"quad_index": code_array.get_next_quad_index()}
     return
@@ -492,6 +561,13 @@ def p_qis_1(p):
     code_array.emit("goto", None, None, None)
     p[0] = {"quad_index": code_array.get_next_quad_index(),
             "goto_quad_index": [code_array.get_current_quad_index()]}
+    return
+
+
+def p_psc(p):  # psc: procedure symbol table creator
+    """psc      : """
+    symbol_table.create_new_scope_symbol_table()
+    p[0] = {"quad_index": code_array.get_next_quad_index()}
     return
 
 

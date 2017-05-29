@@ -13,14 +13,15 @@ procedure func (int n;)
 	int y:=#2;
 	boolean test:=true;
 	{
-		if < (x,y)
+		if = (x,y)
 		then 
 		x:= +(x, #1)
 		else
 		y:= -(y, #1);
-		
+		print x;
+		print y;
 		do 
-		x:=+(x,#1)
+		{x:=+(x,#1);}
 		while <(x, #1);
 		
 		a := *(d[#1],#2);
@@ -33,7 +34,7 @@ procedure func (int n;)
 		return j;
 	}
 };
-procedure func (int inputt; boolean which;) {
+procedure funcc (int input; boolean which;) {
         int mid := #2;
          int cc := \3;
          {
@@ -53,6 +54,7 @@ procedure func (int inputt; boolean which;) {
     };
 main 
 {
+    abs(#1);
 	a:=#10;
 	switch +(a,#1)
 	case #4: 
@@ -65,10 +67,9 @@ main
 	}
 	default:
 	{
-		a:=%(a, false);
+		a:=%(a, true);
 	}
 	end;
-	print a;
 	d[#1]:=#2;
 	
 }
