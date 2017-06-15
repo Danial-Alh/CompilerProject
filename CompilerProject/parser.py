@@ -11,11 +11,19 @@ precedence = (
 
 
 def p_program(p):
-    """program      : PROGRAM psc ID declarations_list procedure_list MAIN block
-                    | PROGRAM psc ID procedure_list MAIN block
+    """program      : PROGRAM psc ID declarations_list qis_1 procedure_list MAIN block
+                    | PROGRAM psc ID qis_1 procedure_list MAIN block
                     | PROGRAM psc ID declarations_list MAIN block
                     | PROGRAM psc ID MAIN block"""
     symbol_table.set_root()
+    if len(p) > 7:
+        if len(p) == 9:
+            main_goto_quad_index = p[5]
+            main_quad_index = p[8]
+        else:
+            main_goto_quad_index = p[4]
+            main_quad_index = p[7]
+        code_array.backpatch_e_list(main_goto_quad_index["goto_quad_index"], main_quad_index["starting_quad_index"])
     return
 
 
@@ -35,9 +43,14 @@ def p_declarations(p):
     for declarator in p[2]["declarations_info"]:
         declarator["type"] = p[1]["type"]
         place = declarator["place"]
-        if place not in symbol_table:
-            symbol_table.install_variable(declarator)
+        if not symbol_table.current_scope_has_variable(place):
+            if place in symbol_table:
+                should_be_declared = False
+            else:
+                should_be_declared = True
+            index = symbol_table.install_variable(declarator)
             code_array.initialize_variable(declarator)
+            symbol_table[index]["should_be_declared"] = should_be_declared
         else:
             raise CompilationException("multiple variable \'" + place + "\' declaration!!", p.slice[1])
         declarations.append(declarator)
@@ -141,14 +154,9 @@ def p_procedure_list(p):
 
 
 def p_procedure(p):
-    """procedure        : PROCEDURE psc ID parameters LBRACE declarations_list qis_1 block RBRACE SEMICOLON
-                        | PROCEDURE psc ID parameters LBRACE qis_1 block RBRACE SEMICOLON"""
-    procedure = {"place": p[3]["place"], "quad_index": p[2]["quad_index"], "parameters": p[4]}
-    place = procedure["place"]
-    if place not in symbol_table:
-        symbol_table.install_procedure(procedure)
-    else:
-        raise CompilationException("multiple procedure \'" + place + "\' declaration!!", p.slice[3])
+    """procedure        : PROCEDURE function_sign LBRACE qis_1 declarations_list block RBRACE SEMICOLON
+                        | PROCEDURE function_sign LBRACE qis_1 block RBRACE SEMICOLON"""
+    procedure = p[2]
     p[0] = procedure
 
     # goto return statements
@@ -159,16 +167,27 @@ def p_procedure(p):
     begin_procedure_statements_quad_index = code_array.get_next_quad_index()
 
     # backpatch qis_1 with begin proc statements
-    if len(p) == 10:
-        qis_1 = p[6]
-    else:
-        qis_1 = p[7]
+    qis_1 = p[4]
     code_array.backpatch_e_list(qis_1["goto_quad_index"], begin_procedure_statements_quad_index)
     # load arguments
     for parameter in procedure["parameters"]:
         code_array.emit("pop", parameter, None, None)
     # goto beginning of proc
     code_array.emit("goto", None, qis_1["quad_index"], None)
+    symbol_table.pop_scope()
+    return
+
+
+def p_fucntion_sign(p):
+    """function_sign      : psc ID parameters"""
+    sign = {"place": p[2]["place"], "quad_index": p[1]["quad_index"], "parameters": p[3]}
+    p[0] = sign
+    place = sign["place"]
+    if place not in symbol_table:
+        symbol_table.install_procedure(sign)
+    else:
+        raise CompilationException("multiple procedure \'" + place + "\' declaration!!", p.slice[2])
+    p[0] = sign
     return
 
 
@@ -183,7 +202,11 @@ def p_parameters(p):
 
 
 def p_block(p):
-    """block        : LBRACE statement_list RBRACE"""
+    """block        : LBRACE qis statement_list RBRACE"""
+    p[0] = {
+        "starting_quad_index": p[2]["quad_index"],
+        "ending_quad_index": code_array.get_current_quad_index()
+    }
     return
 
 
@@ -221,6 +244,11 @@ def p_statement_assignment(p):
     return
 
 
+###### function call stack ######
+# TOP     # arguments
+# return address
+# return value
+# current context
 def p_statement_function_call(p):
     """statement            : ID LPAR arguments_list RPAR"""
     procedure = p[1]
@@ -232,18 +260,28 @@ def p_statement_function_call(p):
     code_array.save_context()
     code_array.emit("push", None, {"value": 0, "type": "int"}, None)
     return_address_variable = symbol_table.get_new_temp_variable("void*")
-    code_array.emit("&&", return_address_variable, code_array.get_next_quad_index() + len(p[3]) + 3, None)
+    code_array.emit("&&", return_address_variable, None, None)
+    temp_index = code_array.get_current_quad_index()
     code_array.emit("push", None, return_address_variable, None)
     for argument in p[3]:
         code_array.emit("push", None, argument, None)
     code_array.emit("call", None, procedure["quad_index"], None)
     code_array.emit("pop", symbol_table.get_new_temp_variable("int"), None, None)
+    code_array.backpatch_e_list([temp_index], code_array.get_current_quad_index())
     code_array.restore_context()
     return
 
 
 def p_statement_function_return(p):
     """statement            : RETURN expressions"""
+    if p[2]["type"] != "int":
+        raise CompilationException("return value can only be in int type!! seen type: " + p[2]["type"], p.slice[2])
+    # goto return statements
+    return_address_variable = symbol_table.get_new_temp_variable("void*")
+    code_array.emit("pop", return_address_variable, None, None)
+    code_array.emit("pop", symbol_table.get_new_temp_variable("int"), None, None)
+    code_array.emit("push", None, p[2], None)
+    code_array.emit("short jump", None, return_address_variable, None)
     return
 
 
@@ -393,6 +431,25 @@ def p_expressions(p):
 
 def p_expressions_function_call(p):
     """expressions      : ID LPAR arguments_list RPAR"""
+    procedure = p[1]
+    symbol_table.check_procedure_declaration(procedure, p.slice[1])
+    if len(p[3]) != len(procedure["parameters"]):
+        raise CompilationException(
+            "function call didn't match with function \'" + procedure["place"] + "\' declaration!",
+            p.slice[1])
+    code_array.save_context()
+    code_array.emit("push", None, {"value": 0, "type": "int"}, None)
+    return_address_variable = symbol_table.get_new_temp_variable("void*")
+    code_array.emit("&&", return_address_variable, None, None)
+    temp_index = code_array.get_current_quad_index()
+    code_array.emit("push", None, return_address_variable, None)
+    for argument in p[3]:
+        code_array.emit("push", None, argument, None)
+    code_array.emit("call", None, procedure["quad_index"], None)
+    p[0] = symbol_table.get_new_temp_variable("int")
+    code_array.emit("pop", p[0], None, None)
+    code_array.backpatch_e_list([temp_index], code_array.get_current_quad_index())
+    code_array.restore_context()
     return
 
 
@@ -566,7 +623,7 @@ def p_qis_1(p):
 
 def p_psc(p):  # psc: procedure symbol table creator
     """psc      : """
-    symbol_table.create_new_scope_symbol_table()
+    symbol_table.create_new_scope_symbol_table("main")
     p[0] = {"quad_index": code_array.get_next_quad_index()}
     return
 

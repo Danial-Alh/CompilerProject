@@ -9,10 +9,12 @@ int array[#2] := {#1, #7};
 char chars[i..k] := {'c', 'd', '7'};
 procedure func (int n;)
 {
-	int xp:=#1;
+	int x:=#1;
 	int y:=#2;
 	boolean test:=true;
 	{
+	    y := +(true, #1);
+	    print y;
 		if = (x,y)
 		then 
 		x:= +(x, #1)
@@ -31,7 +33,7 @@ procedure func (int n;)
 		for i:=#1 upto #10
 		do d[#1] := +(j,+(i,#2));
 		
-		return j;
+		return x;
 	}
 };
 procedure funcc (int input; boolean which;) {
@@ -44,18 +46,29 @@ procedure funcc (int input; boolean which;) {
          }
     };
 
-    procedure abs (int input;)
+procedure fact(int input;)
+{
     {
-        int u;
-        {
-            if >(input, \0) then {return input;u:=#89;}
-            else return *(-#1, input);
-        }
-    };
+        print input;
+        if =(input, #1) then {return #1;}
+        else return *(fact(-(input,#1)), input);
+    }
+};
+procedure fib(int input;)
+{
+    int reso, ress;
+    {
+        if =(input, #0) then return #0;
+        if or else (=(input, #1), =(input, #2)) then return #1;
+        reso := fib(-(input,#1));
+        ress := fib(-(input,#2));
+        return +(reso, ress);
+    }
+};
 main 
 {
-    abs(#1);
-	a:=#10;
+    a := fib(#13);
+    print a;
 	switch +(a,#1)
 	case #4: 
 	{

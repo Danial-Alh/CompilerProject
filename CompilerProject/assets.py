@@ -1,16 +1,20 @@
 import copy
+import re
 
 
 class SymbolTable:
+    temp_variable_counter = 0
+    last_id_seen = ""
+
     class ScopeSymbolTable:
-        def __init__(self, parent):
+        def __init__(self, function_name, parent):
             if parent is None:
                 self.depth = 0
             else:
                 self.depth = parent.depth + 1
+            self.function_name = function_name
             self.parent = parent
             self.size = 0
-            self.temp_variable_counter = 0
             self.symbols = []
             return
 
@@ -31,6 +35,13 @@ class SymbolTable:
     def __getitem__(self, item):
         return item["sym_table"].symbols[item["local_index"]]
 
+    def current_scope_has_variable(self, item):
+        current_table = self.table_stack[-1]
+        for symbol in current_table.symbols:
+            if symbol["place"] == item:
+                return True
+        return False
+
     def index(self, object, start: int = 0, stop: int = ...):
         current_table = self.table_stack[-1]
         while current_table is not None:
@@ -41,9 +52,8 @@ class SymbolTable:
         return None
 
     def get_new_temp_variable(self, type):
-        current_table = self.table_stack[-1]
-        place = "T" + str(current_table.temp_variable_counter)
-        current_table.temp_variable_counter += 1
+        place = "T" + str(self.temp_variable_counter)
+        self.temp_variable_counter += 1
         symbol_table_entry = self.get_new_variable_dictionary(place)
         symbol_table_entry["type"] = type
         index = self.install_variable(symbol_table_entry)
@@ -51,7 +61,7 @@ class SymbolTable:
 
     def get_new_variable_dictionary(self, place):
         return {"declared": False, "index": None,
-                "is_array": False, "type": None, "place": place, "initializer": None}
+                "is_array": False, "type": None, "place": place, "initializer": None, "should_be_declared": True}
 
     def get_variable_size(self, variable):
         type_size = {"int": 4, "float": 4, "char": 1, "bool": 1, "void*": 8}
@@ -70,12 +80,12 @@ class SymbolTable:
             msg = "procedure \'" + procedure["place"] + "\' not declared!!"
             raise CompilationException(msg, param)
 
-    def create_new_scope_symbol_table(self):
+    def create_new_scope_symbol_table(self, function_name):
         if len(self.table_stack) == 0:
             parent_table = None
         else:
             parent_table = self.table_stack[-1]
-        new_scope_symbol_table = self.ScopeSymbolTable(parent_table)
+        new_scope_symbol_table = self.ScopeSymbolTable(function_name, parent_table)
         self.table_stack.append(new_scope_symbol_table)
         return new_scope_symbol_table
 
@@ -88,14 +98,20 @@ class SymbolTable:
         return variable["index"]
 
     def install_procedure(self, procedure):
-        procedure_table = self.table_stack.pop()
-        parent_table = self.table_stack[-1]
+        procedure_table = self.table_stack[-1]
+        procedure_table.function_name = procedure["place"]
+        parent_table = self.table_stack[-2]
         parent_table.symbols.append(procedure)
         procedure["sym_table"] = procedure_table
         procedure["type"] = "procedure"
         procedure["index"] = {"local_index": len(parent_table.symbols) - 1, "sym_table": parent_table}
         procedure["declared"] = True
+        procedure["should_be_declared"] = True
         return len(parent_table.symbols) - 1
+
+    def pop_scope(self):
+        self.table_stack.pop()
+        return
 
     def set_root(self):
         self.root = self.table_stack.pop()
@@ -117,6 +133,10 @@ class CodeArray(list):
                 "label_used": label_used}
 
     def emit(self, opt, result, first_arg, second_arg):
+        if opt == "push" and "value" in first_arg:
+            temp_var = symbol_table.get_new_temp_variable(first_arg["type"])
+            self.emit("=", temp_var, first_arg, None)
+            first_arg = temp_var
         self.append(self.get_new_entry(opt, result, first_arg, second_arg, False))
         return
 
@@ -152,12 +172,17 @@ class CodeArray(list):
         else:
             result = str(variable["place"])
             if variable["is_array"]:
-                if "array_index" not in variable:
-                    raise CompilationException("array \'" + variable["place"] + "\' without index!!!")
-                else:
+                if "array_index" in variable:
                     index_string = code_array.get_variable_string(variable["array_index"])
                     result += "[" + str(index_string) + "]"
         return result
+
+    def get_variable_type(self, variable):
+        variable_type = variable["type"]
+        if "value" not in variable:
+            if variable["is_array"]:
+                variable_type += "*"
+        return variable_type
 
     def initialize_variable(self, variable):
         if variable["is_array"]:
@@ -196,14 +221,20 @@ class CodeArray(list):
         return var_copy
 
     def save_context(self):
-        for entry in symbol_table.get_current_scope_symbol_table():
-            if entry["type"] != "procedure":
+        for i in range(0, len(symbol_table.get_current_scope_symbol_table())):
+            entry = symbol_table.get_current_scope_symbol_table()[i]
+            if entry["type"] == "procedure" or re.match(r'T([0-9]+)', entry["place"]):
+                continue
+            else:
                 self.emit("push", None, entry, None)
         return
 
     def restore_context(self):
-        for entry in symbol_table.get_current_scope_symbol_table():
-            if entry["type"] != "procedure":
+        for i in reversed(range(0, len(symbol_table.get_current_scope_symbol_table()))):
+            entry = symbol_table.get_current_scope_symbol_table()[i]
+            if entry["type"] == "procedure" or re.match(r'T([0-9]+)', entry["place"]):
+                continue
+            else:
                 self.emit("pop", entry, None, None)
         return
 
@@ -221,31 +252,39 @@ class CodeGenerator:
 
     def generate_code(self):
         for entry in code_array:
-            if entry["opt"] == "goto" and entry["first_arg"] is not None:
+            if entry["opt"] == "goto" or entry["opt"] == "&&" or entry["opt"] == "call":
                 code_array[entry["first_arg"]]["label_used"] = True
         self.result_code = ""
         self.__add_to_result_code("#include <stdlib.h>")
         self.__add_to_result_code("#include <stdbool.h>")
         self.__add_to_result_code("#include <stdio.h>")
+        self.__add_to_result_code("#include <string.h>")
         self.__add_to_result_code("int main()")
         self.__add_to_result_code("{")
         self.number_of_indentation = 1
-        self.__generate_variables(symbol_table.get_root())
+        self.__add_to_result_code("char _stack_[10000] = {0};")
+        self.__add_to_result_code("int _top_ = 0;")
+        self.__generate_variables(symbol_table.get_root(), [])
         self.__generate_statements()
         self.__add_to_result_code("return 0;")
         self.number_of_indentation = 0
         self.__add_to_result_code("}")
         return self.result_code
 
-    def __generate_variables(self, curr_sym_table):
+    def __generate_variables(self, curr_sym_table, variable_names):
         for entry in curr_sym_table.symbols:
+            if not entry["should_be_declared"]:
+                continue
             if entry["type"] == "procedure":
-                self.__generate_variables(entry["sym_table"])
+                self.__generate_variables(entry["sym_table"], variable_names)
+                continue
+            if entry["place"] in variable_names:
                 continue
             declaration_code = entry["type"] + " "
             if entry["is_array"]:
                 declaration_code += "*"
             declaration_code += entry["place"]
+            variable_names.append(entry["place"])
             declaration_code += ";"
             self.__add_to_result_code(declaration_code)
         return
@@ -298,8 +337,27 @@ class CodeGenerator:
                 if entry["first_arg"]["type"] == "char":
                     char_type = "%c"
                 entry_code += "printf(\"" + char_type + "\\n\", " + arg1 + ");"
+            elif opt == '&&':
+                arg1 = "label_" + str(entry["first_arg"])
+                entry_code += code_array.get_variable_string(entry["result"]) + " = &&" + arg1 + ";"
+            elif opt == 'push':
+                variable_type = code_array.get_variable_type(entry["first_arg"])
+                entry_code += "memcpy(_stack_+_top_, &" + code_array.get_variable_string(
+                    entry["first_arg"]) + ", sizeof(" + variable_type + "));\t"
+                entry_code += "_top_ += sizeof(" + variable_type + ");"
+            elif opt == 'pop':
+                variable_type = code_array.get_variable_type(entry["result"])
+                entry_code += "memcpy(&" + code_array.get_variable_string(
+                    entry["result"]) + ", _stack_+_top_-sizeof(" + variable_type + "), sizeof(" + \
+                              variable_type + "));\t"
+                entry_code += "_top_ -= sizeof(" + variable_type + ");"
+            elif opt == 'call':
+                entry_code += "goto label_" + str(entry["first_arg"]) + ";"
+            elif opt == 'short jump':
+                entry_code += "goto *" + code_array.get_variable_string(entry["first_arg"]) + ";"
             else:
-                raise CompilationException("operator \'" + opt + "\' not implemented!")
+                # raise CompilationException("operator \'" + opt + "\' not implemented!")
+                print("operator \'" + opt + "\' not implemented!")
             self.__add_to_result_code(entry_code)
         return
 
