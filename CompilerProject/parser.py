@@ -777,7 +777,7 @@ def run_lexer(input_file_path):
 
 def main():
     # run_lexer("./input_boolean.dm")
-    input_file_name = "procedure"
+    input_file_name = "statements"
     run_compiler("./input/" + input_file_name + ".txt", "./input/" + input_file_name + "_output_code.c")
     from subprocess import check_output
     str_out = check_output("gcc ./input/" + input_file_name + "_output_code.c -o a.out", shell=True).decode()
