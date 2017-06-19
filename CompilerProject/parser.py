@@ -15,6 +15,8 @@ def p_program(p):
                     | PROGRAM psc ID qis_1 procedure_list MAIN block
                     | PROGRAM psc ID declarations_list MAIN block
                     | PROGRAM psc ID MAIN block"""
+    if p[len(p) - 1] and "exit_when_quad_index" in p[len(p) - 1]:
+        raise CompilationException("exit when just allowed in loops!!! function: main", p.slice[1])
     symbol_table.set_root()
     if len(p) > 7:
         if len(p) == 9:
@@ -156,6 +158,8 @@ def p_procedure_list(p):
 def p_procedure(p):
     """procedure        : PROCEDURE function_sign LBRACE qis_1 declarations_list block RBRACE SEMICOLON
                         | PROCEDURE function_sign LBRACE qis_1 block RBRACE SEMICOLON"""
+    if p[len(p) - 3] and "exit_when_quad_index" in p[len(p) - 3]:
+        raise CompilationException("exit when just allowed in loops!!! function: " + p[2]["place"], p.slice[2])
     procedure = p[2]
     p[0] = procedure
 
@@ -203,16 +207,27 @@ def p_parameters(p):
 
 def p_block(p):
     """block        : LBRACE qis statement_list RBRACE"""
-    p[0] = {
-        "starting_quad_index": p[2]["quad_index"],
-        "ending_quad_index": code_array.get_current_quad_index()
-    }
+    p[0] = p[3]
     return
 
 
 def p_statement_list(p):
     """statement_list       : statement SEMICOLON
                             | statement_list statement SEMICOLON"""
+    if len(p) == 3:
+        new_statement = p[1]
+        old_statements = None
+    else:
+        new_statement = p[2]
+        old_statements = p[1]
+    if new_statement and "exit_when_quad_index" in new_statement:
+        if old_statements and "exit_when_quad_index" in old_statements:
+            p[0] = {"exit_when_quad_index": code_array.merge_e_lists(new_statement["exit_when_quad_index"],
+                                                                     old_statements["exit_when_quad_index"])}
+        else:
+            p[0] = new_statement
+    else:
+        p[0] = old_statements
     return
 
 
@@ -245,7 +260,7 @@ def p_statement_assignment(p):
 
 
 ###### function call stack ######
-# TOP     # arguments
+# arguments                # TOP
 # return address
 # return value
 # current context
@@ -258,6 +273,7 @@ def p_statement_function_call(p):
             "function call didn't match with function \'" + procedure["place"] + "\' declaration!",
             p.slice[1])
     code_array.save_context()
+    code_array.emit("store_top", symbol_table.get_current_scope_symbol_table().top_stack_variable, None, None)
     code_array.emit("push", None, {"value": 0, "type": "int"}, None)
     return_address_variable = symbol_table.get_new_temp_variable("void*")
     code_array.emit("&&", return_address_variable, None, None)
@@ -301,6 +317,8 @@ def p_statement_do_while(p):
     """statement            : DO qis statement WHILE bool_expressions"""
     code_array.backpatch_e_list(p[5]["t_list"], p[2]["quad_index"])
     code_array.backpatch_e_list(p[5]["f_list"], code_array.get_next_quad_index())
+    if p[3] and "exit_when_quad_index" in p[3]:
+        code_array.backpatch_e_list(p[3]["exit_when_quad_index"], code_array.get_next_quad_index())
     return
 
 
@@ -315,6 +333,8 @@ def p_statement_for(p):
     code_array.emit(">", None, p[2], p[4]["to"])
     code_array.emit("goto", None, code_array.get_next_quad_index() + 2, None)
     code_array.emit("goto", None, p[6]["quad_index"], None)
+    if p[7] and "exit_when_quad_index" in p[7]:
+        code_array.backpatch_e_list(p[7]["exit_when_quad_index"], code_array.get_next_quad_index())
     return
 
 
@@ -341,13 +361,16 @@ def p_statement_switch(p):
 
 def p_statement_exit_when(p):
     """statement            : EXIT WHEN bool_expressions"""
+    code_array.backpatch_e_list(p[3]["f_list"], code_array.get_next_quad_index())
+    p[0] = {"exit_when_quad_index": p[3]["t_list"]}
     return
 
 
 def p_statement_block(p):
     """statement            : block
                             | """
-
+    if len(p) == 2:
+        p[0] = p[1]
     return
 
 
@@ -438,6 +461,7 @@ def p_expressions_function_call(p):
             "function call didn't match with function \'" + procedure["place"] + "\' declaration!",
             p.slice[1])
     code_array.save_context()
+    code_array.emit("store_top", symbol_table.get_current_scope_symbol_table().top_stack_variable, None, None)
     code_array.emit("push", None, {"value": 0, "type": "int"}, None)
     return_address_variable = symbol_table.get_new_temp_variable("void*")
     code_array.emit("&&", return_address_variable, None, None)
@@ -580,7 +604,7 @@ def p_arithmetic_expressions(p):
                                     | MOD pair
                                     | MINUS expressions"""
     if p.slice[2].type == "expressions":
-        exp_type = get_type_of_arithmetic_expression("int", p[2]["type"])
+        exp_type = get_type_of_arithmetic_expression(p[1], "int", p[2]["type"], p.slice[1])
         p[2] = code_array.store_boolean_expression_in_variable(p[2])
         first_arg = {"value": 0, "type": "int"}
         second_arg = p[2]
@@ -591,10 +615,10 @@ def p_arithmetic_expressions(p):
         second_arg = p[2]["second_arg"]
         # pattern = r'(\*|\+|\-|\/)'
         # if re.match(pattern, p[1]):
-        exp_type = get_type_of_pair_for_arithmetic_expression(p[2])
+        exp_type = get_type_of_pair_for_arithmetic_expression(p[1], p[2], p.slice[1])
     p[0] = symbol_table.get_new_temp_variable(exp_type)
     code_array.emit(p[1], p[0], first_arg, second_arg)
-    if (p[1] == "%" or p[1] == "/") and second_arg["value"] == 0:
+    if (p[1] == "%" or p[1] == "/") and "value" in second_arg and second_arg["value"] == 0:
         raise CompilationException("division by zero!!", p.slice[2])
     return
 
@@ -628,43 +652,92 @@ def p_psc(p):  # psc: procedure symbol table creator
     return
 
 
-def get_type_of_arithmetic_expression(first_arg_type, second_arg_type):
-    if first_arg_type == "int":
-        if second_arg_type == "int":
+def get_type_of_arithmetic_expression(operator, first_arg_type, second_arg_type, parameter):
+    if operator == "%":
+        if second_arg_type in ("float", "char"):
+            raise CompilationException("operator: %, invalid second parameter type!!!\t seen type: " + second_arg_type,
+                                       parameter)
+        if first_arg_type == "int":
             pair_type = "int"
-        elif second_arg_type == "char":
-            pair_type = "char"
-        elif second_arg_type == "float":
+        if first_arg_type == "char":
+            if second_arg_type == "int":
+                pair_type = "int"
+            elif second_arg_type == "bool":
+                pair_type = "int"
+        if first_arg_type == "float":
             pair_type = "float"
-        elif second_arg_type == "bool":
+        if first_arg_type == "bool":
             pair_type = "int"
-    if first_arg_type == "char":
-        if second_arg_type == "int":
-            pair_type = "char"
-        elif second_arg_type == "char":
-            pair_type = "char"
-        elif second_arg_type == "float":
+    elif operator == "/":
+        if second_arg_type == "char":
+            raise CompilationException("operator: /, invalid second parameter type!!!\t seen type: " + second_arg_type,
+                                       parameter)
+        if first_arg_type == "int":
+            if second_arg_type == "int":
+                pair_type = "int"
+            elif second_arg_type == "char":
+                pair_type = "int"
+            elif second_arg_type == "float":
+                pair_type = "float"
+            elif second_arg_type == "bool":
+                pair_type = "int"
+        if first_arg_type == "char":
+            if second_arg_type == "int":
+                pair_type = "int"
+            elif second_arg_type == "char":
+                pair_type = "int"
+            elif second_arg_type == "float":
+                pair_type = "float"
+            elif second_arg_type == "bool":
+                pair_type = "int"
+        if first_arg_type == "float":
             pair_type = "float"
-        elif second_arg_type == "bool":
-            pair_type = "char"
-    if first_arg_type == "float":
-        pair_type = "float"
-    if first_arg_type == "bool":
-        if second_arg_type == "int":
-            pair_type = "int"
-        elif second_arg_type == "char":
-            pair_type = "char"
-        elif second_arg_type == "float":
+        if first_arg_type == "bool":
+            if second_arg_type == "int":
+                pair_type = "int"
+            elif second_arg_type == "char":
+                pair_type = "int"
+            elif second_arg_type == "float":
+                pair_type = "float"
+            elif second_arg_type == "bool":
+                pair_type = "int"
+    elif operator in ("+", "-", "*"):
+        if first_arg_type == "int":
+            if second_arg_type == "int":
+                pair_type = "int"
+            elif second_arg_type == "char":
+                pair_type = "char"
+            elif second_arg_type == "float":
+                pair_type = "float"
+            elif second_arg_type == "bool":
+                pair_type = "int"
+        if first_arg_type == "char":
+            if second_arg_type == "int":
+                pair_type = "char"
+            elif second_arg_type == "char":
+                pair_type = "char"
+            elif second_arg_type == "float":
+                pair_type = "float"
+            elif second_arg_type == "bool":
+                pair_type = "char"
+        if first_arg_type == "float":
             pair_type = "float"
-        elif second_arg_type == "bool":
-            pair_type = "int"
+        if first_arg_type == "bool":
+            if second_arg_type == "int":
+                pair_type = "int"
+            elif second_arg_type == "char":
+                pair_type = "char"
+            elif second_arg_type == "float":
+                pair_type = "float"
+            elif second_arg_type == "bool":
+                pair_type = "int"
     return pair_type
 
 
-def get_type_of_pair_for_arithmetic_expression(pair):
+def get_type_of_pair_for_arithmetic_expression(operator, pair, parameter):
     first_arg_type = pair["first_arg"]["type"]
     second_arg_type = pair["second_arg"]["type"]
-    return get_type_of_arithmetic_expression(first_arg_type, second_arg_type)
+    return get_type_of_arithmetic_expression(operator, first_arg_type, second_arg_type, parameter)
 
 
 def p_error(p):
@@ -678,6 +751,7 @@ def run_compiler(input_file_path, output_file_path):
     with open(input_file_path, 'r') as input_file:
         code = input_file.read()
     parser.parse(code, lexer=lexer, debug=False, tracking=True)
+    code_array.emit("return 0", None, None, None)
     code_generator = CodeGenerator()
     generated_code = code_generator.generate_code()
     with open(output_file_path, 'w') as output_file:
@@ -703,9 +777,10 @@ def run_lexer(input_file_path):
 
 def main():
     # run_lexer("./input_boolean.dm")
-    run_compiler("./input.dm", "./output_code.c")
+    input_file_name = "procedure"
+    run_compiler("./input/" + input_file_name + ".txt", "./input/" + input_file_name + "_output_code.c")
     from subprocess import check_output
-    str_out = check_output("gcc ./output_code.c -o a.out", shell=True).decode()
+    str_out = check_output("gcc ./input/" + input_file_name + "_output_code.c -o a.out", shell=True).decode()
     if str_out != "":
         return
     else:

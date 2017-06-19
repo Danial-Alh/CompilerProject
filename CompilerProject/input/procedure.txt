@@ -1,0 +1,61 @@
+program p
+	// Global variables
+	int a;
+	int length := #10;
+	int f[--#0 .. --length];
+	
+	// Procedures and functions
+	procedure fibo(int number;) {
+		int a := #0;
+		int b := #1;
+		int next;
+		{
+			if <(number, #0) then return #0;
+			switch number
+				case #0: {return #0;}
+				case #1: {return #1;}
+				default: {
+					do {
+						next := +(a, b);
+						a := b;
+						b := next;
+						number := -(number, #1);
+					} while >(number, #1);
+					return b;
+				}
+			end;
+		}
+	};
+
+	procedure makeFibo (int arr[--#0 .. --length]; int number;) {
+		// length should be at least number + 1!
+		int c;
+
+		{
+			if <(number, #0) then
+				return arr
+			else if =(number, #0) then {
+				arr[#0] := #0;
+				return arr;
+			} else if =(number, #1) then {
+				arr[#0] := #0;
+				arr[#1] := #1;
+				return arr;
+			} else {
+				arr[#0] := #0;
+				arr[#1] := #1;
+
+				c := #2;
+				do {
+					arr[c] := +(arr[-(c, #1)], arr[-(c, #2)]);
+					c := +(c, #1);
+				} while <=(c, number);
+				return arr;
+			};
+		}
+	};
+	
+	main {
+		a := fibo(#10); // a = 55
+		f := makeFibo(f, #9); // 0, 1, 1, 2, 3, 5, 8, 13, 21, 34
+	}

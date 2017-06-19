@@ -2,8 +2,8 @@
 /**/__pycache__/
 Phase2/
 CompilerProject/parsing_table.py
-CompilerProject/parser.out
-CompilerProject/*.o*
-CompilerProject/*.c
+CompilerProject/*.out
+CompilerProject/input/*.o*
+CompilerProject/input/*.c
 /**/*.pdf
 /**/*.docx

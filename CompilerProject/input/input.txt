@@ -49,7 +49,6 @@ procedure funcc (int input; boolean which;) {
 procedure fact(int input;)
 {
     {
-        print input;
         if =(input, #1) then {return #1;}
         else return *(fact(-(input,#1)), input);
     }
@@ -67,10 +66,12 @@ procedure fib(int input;)
 };
 main 
 {
+    a := fact(#3);
+    print a;
     a := fib(#13);
     print a;
 	switch +(a,#1)
-	case #4: 
+	case #234:
 	{
 		a:=+(a, #4);
 	}
@@ -83,6 +84,6 @@ main
 		a:=%(a, true);
 	}
 	end;
+	print a;
 	d[#1]:=#2;
-	
 }

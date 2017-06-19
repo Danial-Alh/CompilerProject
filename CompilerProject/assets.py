@@ -16,6 +16,8 @@ class SymbolTable:
             self.parent = parent
             self.size = 0
             self.symbols = []
+            # self.top_stack_variable = symbol_table.get_new_temp_variable("type")
+            self.top_stack_variable = None
             return
 
     def __init__(self):
@@ -137,6 +139,8 @@ class CodeArray(list):
             temp_var = symbol_table.get_new_temp_variable(first_arg["type"])
             self.emit("=", temp_var, first_arg, None)
             first_arg = temp_var
+        # if first_arg == 115:
+        #     print("ok")
         self.append(self.get_new_entry(opt, result, first_arg, second_arg, False))
         return
 
@@ -157,6 +161,8 @@ class CodeArray(list):
 
     def backpatch_e_list(self, e_list, target):
         for quad_entry_index in e_list:
+            # if quad_entry_index == 115:
+            #     print("ok")
             code_array[quad_entry_index]["first_arg"] = target
         return
 
@@ -252,7 +258,9 @@ class CodeGenerator:
 
     def generate_code(self):
         for entry in code_array:
-            if entry["opt"] == "goto" or entry["opt"] == "&&" or entry["opt"] == "call":
+            if entry["opt"] in ("goto", "&&", "call"):
+                if entry["first_arg"] is None:
+                    raise CompilationException("goto with no arg!!\n\t" + str(entry))
                 code_array[entry["first_arg"]]["label_used"] = True
         self.result_code = ""
         self.__add_to_result_code("#include <stdlib.h>")
@@ -266,7 +274,6 @@ class CodeGenerator:
         self.__add_to_result_code("int _top_ = 0;")
         self.__generate_variables(symbol_table.get_root(), [])
         self.__generate_statements()
-        self.__add_to_result_code("return 0;")
         self.number_of_indentation = 0
         self.__add_to_result_code("}")
         return self.result_code
@@ -336,6 +343,8 @@ class CodeGenerator:
                 char_type = "%d"
                 if entry["first_arg"]["type"] == "char":
                     char_type = "%c"
+                elif entry["first_arg"]["type"] == "float":
+                    char_type = "%f"
                 entry_code += "printf(\"" + char_type + "\\n\", " + arg1 + ");"
             elif opt == '&&':
                 arg1 = "label_" + str(entry["first_arg"])
@@ -355,6 +364,8 @@ class CodeGenerator:
                 entry_code += "goto label_" + str(entry["first_arg"]) + ";"
             elif opt == 'short jump':
                 entry_code += "goto *" + code_array.get_variable_string(entry["first_arg"]) + ";"
+            elif opt == 'return 0':
+                entry_code += "return 0;"
             else:
                 # raise CompilationException("operator \'" + opt + "\' not implemented!")
                 print("operator \'" + opt + "\' not implemented!")
